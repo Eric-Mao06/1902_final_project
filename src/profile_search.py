@@ -4,6 +4,20 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 import requests
 from typing import List, Dict, Any
+from bson import ObjectId
+
+def serialize_mongo_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert MongoDB document to JSON-serializable format"""
+    if doc is None:
+        return None
+    
+    result = {}
+    for key, value in doc.items():
+        if isinstance(value, ObjectId):
+            result[key] = str(value)
+        else:
+            result[key] = value
+    return result
 
 class ProfileSearch:
     def __init__(self):
@@ -68,16 +82,4 @@ class ProfileSearch:
             }
         ])
         
-        return list(results)
-
-if __name__ == "__main__":
-    searcher = ProfileSearch()
-    query = input("Enter your search query: ")
-    results = searcher.search_profiles(query)
-    
-    print("\nSearch Results:")
-    for result in results:
-        score = result.pop('score', 0) 
-        print(f"\nScore: {score:.4f}")
-        for key, value in result.items():
-            print(f"{key}: {value}")
+        return [serialize_mongo_doc(doc) for doc in results]
