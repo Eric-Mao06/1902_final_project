@@ -21,14 +21,15 @@ origins = [
     "http://127.0.0.1:8081",  # Alternative localhost notation
     "exp://localhost:19000",   # Expo development client
     "http://localhost:19000",
-    "https://upenn.netlify.app/",
+    "https://upenn.netlify.app",  # Production Netlify domain
+    "https://upenn.netlify.app/",  # Production Netlify domain with trailing slash
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
