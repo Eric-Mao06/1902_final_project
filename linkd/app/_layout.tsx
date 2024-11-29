@@ -8,6 +8,7 @@ import { TamaguiProvider, Theme, createTamagui, Button, Image } from 'tamagui';
 import { config } from '@tamagui/config/v2';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { AuthProvider } from '@/context/AuthContext';
 
 const tamaguiConfig = createTamagui(config);
 
@@ -35,27 +36,29 @@ export default function RootLayout() {
     <TamaguiProvider config={tamaguiConfig}>
       <Theme name={colorScheme === 'dark' ? 'dark' : 'light'}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Link href="/" asChild style={{ position: 'absolute', left: 16, top: 16, zIndex: 1 }}>
-            <Button unstyled>
-              <Image
-                source={{ uri: 'https://static.wikia.nocookie.net/logopedia/images/a/a7/Vercel_favicon.svg/revision/latest?cb=20221026155821' }}
-                width={50}
-                height={50}
-                borderRadius={16}
-              />
-            </Button>
-          </Link>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: {
-                backgroundColor: Colors[colorScheme ?? 'light'].background,
-              }
-            }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="search" />
-          </Stack>
-          <StatusBar style="auto" />
+          <AuthProvider>
+            <Link href="/" asChild style={{ position: 'absolute', left: 16, top: 16, zIndex: 1 }}>
+              <Button unstyled>
+                <Image
+                  source={{ uri: 'https://static.wikia.nocookie.net/logopedia/images/a/a7/Vercel_favicon.svg/revision/latest?cb=20221026155821' }}
+                  width={50}
+                  height={50}
+                  borderRadius={16}
+                />
+              </Button>
+            </Link>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+              }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="search" />
+            </Stack>
+            <StatusBar style="auto" />
+          </AuthProvider>
         </ThemeProvider>
       </Theme>
     </TamaguiProvider>
