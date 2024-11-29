@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from profile_search import ProfileSearch
+from .profile_search import ProfileSearch
 from typing import List, Dict, Any
 from fastapi.responses import JSONResponse
 import traceback
@@ -17,6 +17,10 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
+    "http://localhost:8081",  # Expo web default port
+    "http://127.0.0.1:8081",  # Alternative localhost notation
+    "exp://localhost:19000",   # Expo development client
+    "http://localhost:19000",
 ]
 
 app.add_middleware(
@@ -32,7 +36,7 @@ app.add_middleware(
 profile_searcher = ProfileSearch()
 
 @app.get("/api/search")
-async def search_profiles(query: str, limit: int = 5):
+async def search_profiles(query: str, limit: int = 50):
     try:
         logger.debug(f"Received search request with query: {query}, limit: {limit}")
         
