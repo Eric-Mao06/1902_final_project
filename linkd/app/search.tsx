@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingTop: 80, // Add space for the logo
     backgroundColor: '#f5f5f5',
   },
   resultsContainer: {

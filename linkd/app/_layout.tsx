@@ -1,13 +1,15 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, Link } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
-
+import { TamaguiProvider, Theme, createTamagui, Button, Image } from 'tamagui';
+import { config } from '@tamagui/config/v2';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+
+const tamaguiConfig = createTamagui(config);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -16,6 +18,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
   });
 
   useEffect(() => {
@@ -29,31 +32,32 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: Colors[colorScheme ?? 'light'].background,
-          },
-          headerTintColor: Colors[colorScheme ?? 'light'].tint,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}>
-        <Stack.Screen
-          name="index"
-          options={{
-            title: 'Home',
-          }}
-        />
-        <Stack.Screen
-          name="search"
-          options={{
-            title: 'Search Results',
-          }}
-        />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <TamaguiProvider config={tamaguiConfig}>
+      <Theme name={colorScheme === 'dark' ? 'dark' : 'light'}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Link href="/" asChild style={{ position: 'absolute', left: 16, top: 16, zIndex: 1 }}>
+            <Button unstyled>
+              <Image
+                source={{ uri: 'https://static.wikia.nocookie.net/logopedia/images/a/a7/Vercel_favicon.svg/revision/latest?cb=20221026155821' }}
+                width={50}
+                height={50}
+                borderRadius={16}
+              />
+            </Button>
+          </Link>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background,
+              }
+            }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="search" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </Theme>
+    </TamaguiProvider>
   );
 }
