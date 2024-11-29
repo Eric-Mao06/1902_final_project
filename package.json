@@ -2,6 +2,11 @@
   "name": "linkd",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd linkd && npm start"
+    "start": "cd linkd && npm start",
+    "start-backend": "cd backend && uvicorn src.api:app --reload --port 8000",
+    "dev": "concurrently \"npm run start-backend\" \"npm start\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
