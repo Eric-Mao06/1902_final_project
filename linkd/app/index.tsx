@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 import { XStack, YStack, Text, TextArea, Button, H1, Stack } from 'tamagui';
 
 export default function HomePage() {
@@ -12,12 +13,12 @@ export default function HomePage() {
   };
 
   return (
-    <YStack flex={1} width="100%" paddingHorizontal="$4" paddingVertical="$4">
+    <YStack flex={1} width="100%" paddingHorizontal="$4" paddingVertical={Platform.OS === 'ios' ? 120 : Platform.OS === 'android' ? 60 : 40} space="$8">
       <YStack flex={1} alignItems="center" justifyContent="center" space="$4" paddingHorizontal="$4">
         <YStack space="$4" maxWidth={800} width="100%" alignItems="center">
           <H1 
             textAlign="center" 
-            size="$10"
+            fontSize={Platform.OS === 'ios' ? '$9' : '$10'}
             marginBottom="$2"
           >
             Where Ambition Meets{' '}
@@ -25,12 +26,13 @@ export default function HomePage() {
               backgroundColor="$blue4" 
               paddingHorizontal="$2" 
               borderRadius="$4"
+              fontSize={Platform.OS === 'ios' ? '$9' : '$10'}
             >
               Experience.
             </Text>
           </H1>
 
-          <Stack width="100%" maxWidth={800}>
+          <Stack width="100%" maxWidth={800} position="relative">
             <TextArea
               size="$4"
               borderWidth={2}
@@ -39,31 +41,43 @@ export default function HomePage() {
               onChangeText={setSearchQuery}
               onSubmitEditing={handleSearch}
               borderRadius="$4"
-              style={{ padding: 16, paddingRight: 48 }}
+              style={{ padding: 16 }}
               minHeight={140}
+              returnKeyType="search"
             />
-            <Button
-              size="$3"
-              theme="active"
-              backgroundColor="$black10"
-              onPress={handleSearch}
-              borderRadius="$10"
-              position="absolute"
-              right="$3"
-              bottom="$3"
-              width="$10"
-              height="$4"
-            >
-              Search →
-            </Button>
+            {Platform.OS !== 'ios' && (
+              <Button
+                size="$3"
+                theme="active"
+                backgroundColor="black"
+                color="white"
+                onPress={handleSearch}
+                borderRadius="$10"
+                position="absolute"
+                right="$3"
+                bottom="$3"
+                width="$10"
+                height="$4"
+              >
+                Search →
+              </Button>
+            )}
           </Stack>
 
-          <XStack flexWrap="wrap" justifyContent="center" space="$2" marginTop="$4">
+          <XStack 
+            flexDirection={Platform.OS === 'ios' ? 'column' : 'row'}
+            flexWrap={Platform.OS === 'ios' ? undefined : 'wrap'}
+            alignItems="center"
+            justifyContent="center" 
+            space="$2" 
+            marginTop={Platform.OS === 'ios' ? '$8' : '$4'}
+          >
             <Button 
               size="$3" 
               variant="outlined" 
               borderRadius="$4"
               onPress={() => setSearchQuery("Alumni working on tech startups")}
+              width={Platform.OS === 'ios' ? 320 : undefined}
             >
               Alumni working on tech startups →
             </Button>
@@ -72,6 +86,7 @@ export default function HomePage() {
               variant="outlined" 
               borderRadius="$4"
               onPress={() => setSearchQuery("Alumni mentors in data science")}
+              width={Platform.OS === 'ios' ? 320 : undefined}
             >
               Alumni mentors in data science →
             </Button>
@@ -80,6 +95,7 @@ export default function HomePage() {
               variant="outlined" 
               borderRadius="$4"
               onPress={() => setSearchQuery("Alumni who changed careers")}
+              width={Platform.OS === 'ios' ? 320 : undefined}
             >
               Alumni who changed careers →
             </Button>

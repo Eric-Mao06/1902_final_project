@@ -143,11 +143,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    paddingTop: 80,
+    paddingTop: Platform.OS === 'ios' ? 120 : 80,
     backgroundColor: '#f5f5f5',
   },
   resultsContainer: {
     flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 16 : 0,
   },
   profileGrid: {
     flexDirection: 'row',
