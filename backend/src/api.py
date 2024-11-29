@@ -21,6 +21,7 @@ origins = [
     "http://127.0.0.1:8081",  # Alternative localhost notation
     "exp://localhost:19000",   # Expo development client
     "http://localhost:19000",
+    "https://upenn.netlify.app/",
 ]
 
 app.add_middleware(
