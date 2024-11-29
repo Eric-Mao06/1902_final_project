@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .profile_search import ProfileSearch
+from profile_search import ProfileSearch
 from typing import List, Dict, Any
 from fastapi.responses import JSONResponse
 import traceback
