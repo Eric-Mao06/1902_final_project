@@ -39,6 +39,12 @@ export default function HomePage() {
               placeholder="Alumni who studied abroad and now work internationally"
               value={searchQuery}
               onChangeText={setSearchQuery}
+              onKeyPress={(e) => {
+                if (e.nativeEvent.key === 'Enter' && !((e as any).nativeEvent.shiftKey)) {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
               onSubmitEditing={handleSearch}
               borderRadius="$4"
               style={{ padding: 16 }}
