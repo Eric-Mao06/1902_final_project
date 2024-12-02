@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, users
+from routes import auth, users, search
 from dependencies import get_db
 import os
 from dotenv import load_dotenv
@@ -21,6 +21,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(search.router, prefix="/api", tags=["search"])
 
 if __name__ == "__main__":
     import uvicorn

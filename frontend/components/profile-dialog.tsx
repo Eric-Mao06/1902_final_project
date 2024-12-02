@@ -62,106 +62,90 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex justify-center mb-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="flex justify-center mb-3">
             {editedProfile.photoUrl ? (
               <img
                 src={editedProfile.photoUrl}
                 alt="Profile"
-                className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
+                className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
               />
             ) : (
-              <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">
+              <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center">
                 <span className="text-2xl text-gray-500">👤</span>
               </div>
             )}
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Name</label>
-            <Input
-              value={editedProfile.name}
-              onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Email</label>
-            <Input
-              value={editedProfile.email}
-              disabled
-              className="w-full bg-gray-100"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">LinkedIn URL</label>
-            <Input
-              value={editedProfile.linkedinUrl}
-              disabled
-              className="w-full bg-gray-100"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Location</label>
-            <Input
-              value={editedProfile.location}
-              onChange={(e) => setEditedProfile({ ...editedProfile, location: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Company</label>
-            <Input
-              value={editedProfile.company}
-              onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Role</label>
-            <Input
-              value={editedProfile.role}
-              onChange={(e) => setEditedProfile({ ...editedProfile, role: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Professional Summary</label>
-            <Textarea
-              value={editedProfile.summary}
-              onChange={(e) => setEditedProfile({ ...editedProfile, summary: e.target.value })}
-              className="min-h-[200px] w-full"
-            />
-          </div>
-          {error && (
-            <div className="text-sm text-red-500">
-              {error}
+          <div className="grid gap-2">
+            <div>
+              <label className="text-sm font-medium">Name</label>
+              <Input
+                value={editedProfile.name}
+                onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
+                className="w-full"
+              />
             </div>
-          )}
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
+            <div>
+              <label className="text-sm font-medium">Email</label>
+              <Input
+                value={editedProfile.email}
+                disabled
+                className="w-full bg-gray-100"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">LinkedIn URL</label>
+              <Input
+                value={editedProfile.linkedinUrl}
+                disabled
+                className="w-full bg-gray-100"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Location</label>
+              <Input
+                value={editedProfile.location}
+                onChange={(e) => setEditedProfile({ ...editedProfile, location: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Company</label>
+              <Input
+                value={editedProfile.company}
+                onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Role</label>
+              <Input
+                value={editedProfile.role}
+                onChange={(e) => setEditedProfile({ ...editedProfile, role: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Summary</label>
+              <Textarea
+                value={editedProfile.summary}
+                onChange={(e) => setEditedProfile({ ...editedProfile, summary: e.target.value })}
+                className="w-full min-h-[100px]"
+              />
+            </div>
+          </div>
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <div className="flex justify-end gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Changes'
-              )}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
             </Button>
           </div>
         </form>

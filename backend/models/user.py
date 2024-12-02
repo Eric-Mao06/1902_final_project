@@ -1,13 +1,13 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 class User:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db.users
 
-    async def create_user(self, user_data: Dict[str, Any], raw_linkedin_data: Dict[str, Any], embedding: list) -> str:
+    async def create_user(self, user_data: Dict[str, Any], raw_linkedin_data: Dict[str, Any], embedding: List[float]) -> str:
         user_doc = {
             "email": user_data["email"],
             "name": user_data["name"],
@@ -70,4 +70,57 @@ class User:
             return updated_user
         except Exception as e:
             print(f"Error updating user: {e}")
+            raise
+
+    async def search_users_by_embedding(self, query_embedding: List[float], limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search for users using vector similarity search with the provided query embedding
+        """
+        try:
+            # Perform vector similarity search using dot product
+            pipeline = [
+                {
+                    "$addFields": {
+                        "similarity": {
+                            "$reduce": {
+                                "input": {"$range": [0, {"$size": "$summary_embedding"}]},
+                                "initialValue": 0,
+                                "in": {
+                                    "$add": [
+                                        "$$value",
+                                        {
+                                            "$multiply": [
+                                                {"$arrayElemAt": ["$summary_embedding", "$$this"]},
+                                                {"$arrayElemAt": [query_embedding, "$$this"]}
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {"$sort": {"similarity": -1}},
+                {"$limit": limit},
+                {
+                    "$project": {
+                        "_id": {"$toString": "$_id"},
+                        "name": 1,
+                        "email": 1,
+                        "location": 1,
+                        "company": 1,
+                        "role": 1,
+                        "summary": 1,
+                        "photoUrl": 1,
+                        "linkedinUrl": 1,
+                        "similarity": 1
+                    }
+                }
+            ]
+            
+            cursor = self.collection.aggregate(pipeline)
+            results = await cursor.to_list(length=limit)
+            return results
+        except Exception as e:
+            print(f"Error in search: {e}")
             raise
