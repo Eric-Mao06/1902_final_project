@@ -13,7 +13,7 @@ export default function SetupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

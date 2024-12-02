@@ -55,7 +55,8 @@ export default function CompleteProfile() {
       localStorage.removeItem('profileData');
       router.push('/dashboard'); // or wherever you want to redirect after signup
     } catch (err) {
-      setError('Failed to complete signup. Please try again.');
+      console.error('Signup error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to complete signup. Please try again.');
     } finally {
       setLoading(false);
     }

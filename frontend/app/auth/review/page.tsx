@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '@/app/constants';
+import Image from 'next/image';
 
 interface ProfileData {
   location: string;
@@ -16,7 +17,7 @@ interface ProfileData {
   role: string;
   summary: string;
   photoUrl: string;
-  raw_data: any;
+  raw_data: Record<string, unknown>;
 }
 
 export default function ReviewPage() {
@@ -148,10 +149,12 @@ export default function ReviewPage() {
         <div className="space-y-4 text-center">
           <div className="flex justify-center">
             {profileData.photoUrl ? (
-              <img
+              <Image
                 src={profileData.photoUrl}
                 alt="Profile"
                 className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
+                width={48}
+                height={48}
               />
             ) : (
               <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">

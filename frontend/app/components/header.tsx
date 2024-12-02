@@ -3,25 +3,23 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import { ProfileDialog } from '@/components/profile-dialog';
 import { useState, useEffect } from 'react';
 
-// Extend the default session user type
-declare module 'next-auth' {
-  interface User {
-    location?: string;
-    company?: string;
-    role?: string;
-    summary?: string;
-    linkedinUrl?: string;
-    photoUrl?: string;
-  }
-  interface Session {
-    user: User;
-  }
+interface ProfileUpdateData {
+  // Add any additional fields that might be updated
+  name?: string;
+  email?: string;
+  location?: string;
+  company?: string;
+  role?: string;
+  summary?: string;
+  linkedinUrl?: string;
+  photoUrl?: string;
 }
 
-export function Header() {
+export default function Header() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
@@ -62,7 +60,7 @@ export function Header() {
     linkedinUrl: session.user.linkedinUrl || '',
   };
 
-  const handleProfileUpdate = (updatedProfile: any) => {
+  const handleProfileUpdate = (updatedProfile: ProfileUpdateData) => {
     // Here you would typically update the session data
     console.log('Profile updated:', updatedProfile);
   };
@@ -84,10 +82,12 @@ export function Header() {
             className="relative h-8 w-8 rounded-full overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity"
           >
             {session.user.photoUrl ? (
-              <img
+              <Image
                 src={session.user.photoUrl}
                 alt="Profile"
                 className="h-full w-full object-cover"
+                width={32}
+                height={32}
                 onError={(e) => {
                   console.log('Failed to load image:', session.user.photoUrl);
                   e.currentTarget.style.display = 'none';

@@ -32,7 +32,8 @@ export default function SignUp() {
       localStorage.setItem('profileData', JSON.stringify(data));
       router.push('/auth/signup/complete-profile');
     } catch (err) {
-      setError('Failed to process LinkedIn URL. Please try again.');
+      console.error('LinkedIn processing error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process LinkedIn URL. Please try again.');
     } finally {
       setLoading(false);
     }
