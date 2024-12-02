@@ -97,7 +97,7 @@ export default function SearchPage() {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="p-6 max-w-lg w-full text-center">
-          <p className="text-xl mb-4">No results found for "{query}"</p>
+          <p className="text-xl mb-4">No results found for &quot;{query}&quot;</p>
           <Button onClick={() => router.push('/')}>
             Try Another Search
           </Button>
@@ -109,7 +109,7 @@ export default function SearchPage() {
   return (
     <main className="min-h-screen p-4 md:p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Results for "{query}"</h1>
+        <h1 className="text-2xl font-bold">Results for &quot;{query}&quot;</h1>
         <Button variant="outline" onClick={() => router.push('/')}>
           New Search
         </Button>

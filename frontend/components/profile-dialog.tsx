@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,9 +70,11 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="flex justify-center mb-3">
             {editedProfile.photoUrl ? (
-              <img
+              <Image
                 src={editedProfile.photoUrl}
                 alt="Profile"
+                width={80}
+                height={80}
                 className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
               />
             ) : (

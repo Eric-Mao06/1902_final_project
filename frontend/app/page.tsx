@@ -71,7 +71,7 @@ export default function HomePage() {
     }, 4000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [placeholders]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
