@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession } from 'next-auth/react';
-import { Loader2, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { Loader2, ArrowUp, ArrowUpRight } from 'lucide-react';
 import { API_URL } from '@/app/constants';
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from './context/sidebar-context';
@@ -155,13 +155,12 @@ export default function HomePage() {
                   </motion.span>
                 </AnimatePresence>
                 <Button 
-                  className="absolute right-2 bottom-2" 
+                  className="absolute right-2 bottom-2 w-8 h-8 p-0 flex items-center justify-center" 
                   size="sm"
                   onClick={handleSearch}
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Searching...' : 'Search'}
-                  <ArrowRight className="w-3 h-3 ml-1" />
+                  <ArrowUp className="w-4 h-4" />
                 </Button>
               </div>
 
@@ -176,7 +175,7 @@ export default function HomePage() {
                     className="text-xs sm:text-sm py-1 px-2 sm:px-3"
                     onClick={() => handleTryAsking("Alumni working on tech startups")}
                   >
-                    Alumni working on tech startups
+                    Alumni working on tech startups 
                     <ArrowUpRight className="w-3 h-3 ml-1" />
                   </Button>
                   <Button 
