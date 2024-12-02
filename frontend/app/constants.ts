@@ -1,0 +1,1 @@
+export const API_URL = 'https://1902finalproject-production.up.railway.app';
