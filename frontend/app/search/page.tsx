@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '../constants';
+import { useSession } from 'next-auth/react';
 
 interface Profile {
   _id: string;
@@ -22,18 +23,24 @@ interface Profile {
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { status } = useSession();
   const query = searchParams.get('query');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchResults = async () => {
-      if (!query) {
-        router.replace('/');
-        return;
-      }
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+      return;
+    }
 
+    if (!query) {
+      router.replace('/');
+      return;
+    }
+
+    const fetchResults = async () => {
       setIsLoading(true);
       setError('');
 
@@ -60,8 +67,18 @@ export default function SearchPage() {
       }
     };
 
-    fetchResults();
-  }, [query, router]);
+    if (status === 'authenticated') {
+      fetchResults();
+    }
+  }, [query, router, status]);
+
+  if (status === 'loading' || (status === 'authenticated' && isLoading)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -72,14 +89,6 @@ export default function SearchPage() {
             Try Another Search
           </Button>
         </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -99,7 +108,12 @@ export default function SearchPage() {
 
   return (
     <main className="min-h-screen p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-6">Results for "{query}"</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Results for "{query}"</h1>
+        <Button variant="outline" onClick={() => router.push('/')}>
+          New Search
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {searchResults.map((profile) => (
           <Card key={profile._id} className="p-4 flex flex-col">
