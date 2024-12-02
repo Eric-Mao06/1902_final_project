@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from typing import Dict, Any
 import requests
 import os
@@ -84,6 +84,8 @@ Analyze this LinkedIn profile comprehensively and extract detailed professional 
         
         # Extract basic profile info
         person = profile_data.get("person", {})
+        print("Person data:", person)  # Debug person data
+        
         location = person.get("location", "")
         company = person.get("currentCompanyName", "")
         if not company and person.get("experience"):
@@ -93,7 +95,16 @@ Analyze this LinkedIn profile comprehensively and extract detailed professional 
         if not role and person.get("experience"):
             role = person["experience"][0].get("title", "")
 
+        # Try different possible photo URL fields
         photo_url = person.get("photoUrl", "")
+        if not photo_url:
+            photo_url = person.get("profilePicture", "")
+        if not photo_url:
+            photo_url = person.get("profileImageUrl", "")
+        if not photo_url:
+            photo_url = person.get("imageUrl", "")
+            
+        print("Extracted photo URL:", photo_url)  # Debug photo URL
         
         return {
             "location": location,
@@ -109,6 +120,50 @@ Analyze this LinkedIn profile comprehensively and extract detailed professional 
     except Exception as e:
         print(f"Error in scrape_linkedin_profile: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to scrape LinkedIn profile: {str(e)}")
+
+@router.get("/user/profile")
+async def get_user_profile(
+    email: str = Header(...),
+    db = Depends(get_db)
+):
+    try:
+        print(f"\n=== Getting user profile for email: {email} ===")
+        
+        user_model = User(db)
+        user = await user_model.get_user_by_email(email)
+        
+        if not user:
+            print(f"No user found for email: {email}")
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Convert ObjectId to string for JSON serialization
+        if '_id' in user:
+            user['_id'] = str(user['_id'])
+        
+        print(f"\nRaw user data from MongoDB:")
+        print(user)
+            
+        response_data = {
+            "name": user.get("name"),
+            "email": user.get("email"),
+            "location": user.get("location"),
+            "company": user.get("company"),
+            "role": user.get("role"),
+            "summary": user.get("summary"),
+            "linkedinUrl": user.get("linkedinUrl"),
+            "photoUrl": user.get("photoUrl"),
+        }
+        
+        print(f"\nFormatted response data:")
+        for key, value in response_data.items():
+            print(f"{key}: {value}")
+        
+        return response_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in get_user_profile: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/complete-signup")
 async def complete_signup(
