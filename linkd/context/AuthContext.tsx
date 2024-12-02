@@ -3,7 +3,7 @@ import * as Linking from 'expo-linking';
 import { API_URL } from '../constants/Config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const GOOGLE_CLIENT_ID = "242588342976-o9f7d1e794gpgonio1743m0gapruahka.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "";
 
 interface User {
   email: string;
