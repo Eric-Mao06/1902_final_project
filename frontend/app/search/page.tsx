@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ interface Profile {
   score?: number;
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { status } = useSession();
@@ -153,5 +153,15 @@ export default function SearchPage() {
         ))}
       </div>
     </main>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>}>
+      <SearchContent />
+    </Suspense>
   );
 }
