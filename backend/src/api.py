@@ -25,6 +25,8 @@ origins = [
     "https://upenn.netlify.app",  # Production Netlify domain
     "https://upenn.netlify.app/",  # Production Netlify domain with trailing slash
     "https://protective-quietude-production.up.railway.app/",
+    "https://1902finalproject-production.up.railway.app",  # Backend domain
+    "https://1902finalproject-production.up.railway.app/",  # Backend domain with trailing slash
 ]
 
 app.add_middleware(
