@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,13 +19,13 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const placeholders = [
+  const placeholders = useMemo(() => [
     "Who are the alumni working in artificial intelligence at Google?",
     "Who can help me understand what it's like to work in consulting?",
     "Which graduates are working in renewable energy startups?",
     "Who went to graduate school after working for a few years?",
     "Alumni who studied abroad and now work internationally"
-  ];
+  ], []);
 
   const [currentPlaceholder, setCurrentPlaceholder] = useState(placeholders[0]);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(true);

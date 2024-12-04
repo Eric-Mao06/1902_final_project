@@ -2,7 +2,6 @@
 
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 import SearchResults from './search-results';
 
