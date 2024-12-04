@@ -9,13 +9,7 @@ import SearchResults from './search-results';
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { status } = useSession();
   const query = searchParams.get('query');
-
-  if (status === 'unauthenticated') {
-    router.push('/auth/signin');
-    return null;
-  }
 
   if (!query) {
     router.replace('/');

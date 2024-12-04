@@ -6,7 +6,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '../constants';
-import { useSession } from 'next-auth/react';
 
 interface Profile {
   _id: string;
@@ -26,7 +25,6 @@ interface SearchResultsProps {
 
 export default function SearchResults({ query }: SearchResultsProps) {
   const router = useRouter();
-  const { status } = useSession();
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,10 +57,8 @@ export default function SearchResults({ query }: SearchResultsProps) {
       }
     };
 
-    if (status === 'authenticated') {
-      fetchResults();
-    }
-  }, [query, status]);
+    fetchResults();
+  }, [query]);
 
   if (isLoading) {
     return (
