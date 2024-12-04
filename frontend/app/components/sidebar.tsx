@@ -49,7 +49,7 @@ export function Sidebar() {
             >
               <div className="relative w-full aspect-square">
                 <Image
-                  src="/heading.png"
+                  src="/Heading.png"
                   alt="Linkd Logo"
                   fill
                   className="object-contain"
