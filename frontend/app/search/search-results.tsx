@@ -14,7 +14,7 @@ interface Profile {
   role?: string;
   company?: string;
   location?: string;
-  linkedin_url?: string;
+  linkedinUrl?: string;
   experience?: string[];
   summary?: string;
   score?: number;
@@ -102,9 +102,6 @@ export default function SearchResults({ query }: SearchResultsProps) {
     <main className="min-h-screen p-4 md:p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Results for &quot;{query}&quot;</h1>
-        <Button variant="outline" onClick={() => router.push('/')}>
-          New Search
-        </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {searchResults.map((profile) => (
@@ -132,11 +129,11 @@ export default function SearchResults({ query }: SearchResultsProps) {
                 </ul>
               </div>
             )}
-            {profile.linkedin_url && (
+            {profile.linkedinUrl && (
               <Button
                 variant="outline"
-                className="mt-auto"
-                onClick={() => window.open(profile.linkedin_url, '_blank')}
+                className="mt-6"
+                onClick={() => window.open(profile.linkedinUrl, '_blank')}
               >
                 View LinkedIn Profile →
               </Button>
