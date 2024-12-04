@@ -4,9 +4,16 @@ import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function SignIn() {
   const router = useRouter();
+
+  const handleSkipSignIn = () => {
+    // Set cookie that expires in 24 hours
+    Cookies.set('skipped-auth', 'true', { expires: 1 });
+    router.push('/');
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -31,7 +38,7 @@ export default function SignIn() {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => router.push('/')}
+            onClick={handleSkipSignIn}
           >
             Skip Sign In
           </Button>

@@ -4,18 +4,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useSession } from 'next-auth/react';
-import { Loader2, ArrowUp, ArrowUpRight } from 'lucide-react';
-import { API_URL } from '@/app/constants';
+import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from './context/sidebar-context';
 
 export default function HomePage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
   const { isExpanded } = useSidebar();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,34 +25,6 @@ export default function HomePage() {
 
   const [currentPlaceholder, setCurrentPlaceholder] = useState(placeholders[0]);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(true);
-
-  useEffect(() => {
-    async function checkUserProfile() {
-      if (status === 'authenticated' && session?.user?.email) {
-        try {
-          const response = await fetch(`${API_URL}/api/users/check?email=${encodeURIComponent(session.user.email)}`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
-          
-          if (!data.exists) {
-            router.push('/auth/setup');
-          }
-        } catch (error) {
-          console.error('Error checking user profile:', error);
-        } finally {
-          setIsCheckingProfile(false);
-        }
-      }
-    }
-
-    if (status === 'authenticated') {
-      checkUserProfile();
-    } else if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    }
-  }, [status, session, router]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -106,20 +74,6 @@ export default function HomePage() {
       handleSearch();
     }
   };
-
-  // Show loading state
-  if (status === 'loading' || isCheckingProfile) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // Don't render anything while redirecting
-  if (status === 'unauthenticated') {
-    return null;
-  }
 
   return (
     <div className="flex-1 transition-all duration-300 ease-in-out">

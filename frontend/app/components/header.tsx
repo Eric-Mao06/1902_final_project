@@ -112,6 +112,7 @@ export default function Header() {
         onClose={() => setIsProfileDialogOpen(false)}
         profileData={profileData}
         onProfileUpdate={handleProfileUpdate}
+        session={session}
       />
     </header>
   );

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { Session } from 'next-auth';
 
 interface ProfileData {
   name: string;
@@ -22,14 +24,66 @@ interface ProfileData {
 interface ProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  profileData: ProfileData;
-  onProfileUpdate: (updatedProfile: ProfileData) => void;
+  profileData?: ProfileData;
+  onProfileUpdate?: (updatedProfile: ProfileData) => void;
+  session: Session | null;
 }
 
-export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }: ProfileDialogProps) {
-  const [editedProfile, setEditedProfile] = useState<ProfileData>(profileData);
+export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, session }: ProfileDialogProps) {
+  const [editedProfile, setEditedProfile] = useState<ProfileData | null>(
+    profileData
+      ? {
+          name: profileData.name || '',
+          email: profileData.email || '',
+          location: profileData.location || '',
+          company: profileData.company || '',
+          role: profileData.role || '',
+          summary: profileData.summary || '',
+          photoUrl: profileData.photoUrl || '',
+          linkedinUrl: profileData.linkedinUrl || '',
+        }
+      : null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (profileData) {
+      setEditedProfile({
+        name: profileData.name || '',
+        email: profileData.email || '',
+        location: profileData.location || '',
+        company: profileData.company || '',
+        role: profileData.role || '',
+        summary: profileData.summary || '',
+        photoUrl: profileData.photoUrl || '',
+        linkedinUrl: profileData.linkedinUrl || '',
+      });
+    }
+  }, [profileData]);
+
+  if (!session) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Sign in Required</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-center text-muted-foreground">
+              Please sign in to view and edit your profile
+            </p>
+            <Button 
+              className="w-full" 
+              onClick={() => signIn('google', { callbackUrl: window.location.href })}
+            >
+              Sign in with Google
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +91,12 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile?email=${encodeURIComponent(profileData.email)}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile?email=${encodeURIComponent(editedProfile!.email)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editedProfile),
+        body: JSON.stringify(editedProfile!),
       });
 
       if (!response.ok) {
@@ -51,7 +105,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
       }
 
       const updatedProfile = await response.json();
-      onProfileUpdate(updatedProfile);
+      onProfileUpdate!(updatedProfile);
       onClose();
     } catch (error) {
       console.error('Error:', error);
@@ -69,7 +123,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="flex justify-center mb-3">
-            {editedProfile.photoUrl ? (
+            {editedProfile?.photoUrl ? (
               <Image
                 src={editedProfile.photoUrl}
                 alt="Profile"
@@ -87,15 +141,27 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
             <div>
               <label className="text-sm font-medium">Name</label>
               <Input
-                value={editedProfile.name}
-                onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
+                value={editedProfile?.name || ''}
+                onChange={(e) => {
+                  if (!editedProfile) return;
+                  setEditedProfile({
+                    name: e.target.value,
+                    email: editedProfile.email || '',
+                    location: editedProfile.location || '',
+                    company: editedProfile.company || '',
+                    role: editedProfile.role || '',
+                    summary: editedProfile.summary || '',
+                    photoUrl: editedProfile.photoUrl || '',
+                    linkedinUrl: editedProfile.linkedinUrl || '',
+                  });
+                }}
                 className="w-full"
               />
             </div>
             <div>
               <label className="text-sm font-medium">Email</label>
               <Input
-                value={editedProfile.email}
+                value={editedProfile?.email || ''}
                 disabled
                 className="w-full bg-gray-100"
               />
@@ -103,7 +169,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
             <div>
               <label className="text-sm font-medium">LinkedIn URL</label>
               <Input
-                value={editedProfile.linkedinUrl}
+                value={editedProfile?.linkedinUrl || ''}
                 disabled
                 className="w-full bg-gray-100"
               />
@@ -111,32 +177,80 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate }:
             <div>
               <label className="text-sm font-medium">Location</label>
               <Input
-                value={editedProfile.location}
-                onChange={(e) => setEditedProfile({ ...editedProfile, location: e.target.value })}
+                value={editedProfile?.location || ''}
+                onChange={(e) => {
+                  if (!editedProfile) return;
+                  setEditedProfile({
+                    name: editedProfile.name || '',
+                    email: editedProfile.email || '',
+                    location: e.target.value,
+                    company: editedProfile.company || '',
+                    role: editedProfile.role || '',
+                    summary: editedProfile.summary || '',
+                    photoUrl: editedProfile.photoUrl || '',
+                    linkedinUrl: editedProfile.linkedinUrl || '',
+                  });
+                }}
                 className="w-full"
               />
             </div>
             <div>
               <label className="text-sm font-medium">Company</label>
               <Input
-                value={editedProfile.company}
-                onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
+                value={editedProfile?.company || ''}
+                onChange={(e) => {
+                  if (!editedProfile) return;
+                  setEditedProfile({
+                    name: editedProfile.name || '',
+                    email: editedProfile.email || '',
+                    location: editedProfile.location || '',
+                    company: e.target.value,
+                    role: editedProfile.role || '',
+                    summary: editedProfile.summary || '',
+                    photoUrl: editedProfile.photoUrl || '',
+                    linkedinUrl: editedProfile.linkedinUrl || '',
+                  });
+                }}
                 className="w-full"
               />
             </div>
             <div>
               <label className="text-sm font-medium">Role</label>
               <Input
-                value={editedProfile.role}
-                onChange={(e) => setEditedProfile({ ...editedProfile, role: e.target.value })}
+                value={editedProfile?.role || ''}
+                onChange={(e) => {
+                  if (!editedProfile) return;
+                  setEditedProfile({
+                    name: editedProfile.name || '',
+                    email: editedProfile.email || '',
+                    location: editedProfile.location || '',
+                    company: editedProfile.company || '',
+                    role: e.target.value,
+                    summary: editedProfile.summary || '',
+                    photoUrl: editedProfile.photoUrl || '',
+                    linkedinUrl: editedProfile.linkedinUrl || '',
+                  });
+                }}
                 className="w-full"
               />
             </div>
             <div>
               <label className="text-sm font-medium">Summary</label>
               <Textarea
-                value={editedProfile.summary}
-                onChange={(e) => setEditedProfile({ ...editedProfile, summary: e.target.value })}
+                value={editedProfile?.summary || ''}
+                onChange={(e) => {
+                  if (!editedProfile) return;
+                  setEditedProfile({
+                    name: editedProfile.name || '',
+                    email: editedProfile.email || '',
+                    location: editedProfile.location || '',
+                    company: editedProfile.company || '',
+                    role: editedProfile.role || '',
+                    summary: e.target.value,
+                    photoUrl: editedProfile.photoUrl || '',
+                    linkedinUrl: editedProfile.linkedinUrl || '',
+                  });
+                }}
                 className="w-full min-h-[100px]"
               />
             </div>
