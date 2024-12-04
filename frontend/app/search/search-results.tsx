@@ -36,7 +36,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
       setError('');
 
       try {
-        const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`, {
+        const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',

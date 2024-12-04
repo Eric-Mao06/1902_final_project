@@ -58,9 +58,7 @@ async def search_profiles(query: str, limit: int = 6):
         json_results = json.loads(dumps({"results": results}))
         logger.debug(f"Search results: {json_results}")
         
-        response = JSONResponse(content=json_results)
-        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
-        return response
+        return json_results
         
     except Exception as e:
         logger.error(f"Error in search_profiles: {str(e)}")
