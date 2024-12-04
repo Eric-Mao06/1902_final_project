@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from .profile_search import ProfileSearch
 from .text_generation import TextGenerationRequest, generate_text_handler
@@ -14,6 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+api_router = APIRouter(prefix="/api")
 
 origins = [
     "http://localhost:3000",
@@ -41,7 +42,7 @@ app.add_middleware(
 # Initialize ProfileSearch
 profile_searcher = ProfileSearch()
 
-@app.get("/api/search")
+@api_router.get("/search")
 async def search_profiles(query: str, limit: int = 6):
     try:
         logger.debug(f"Received search request with query: {query}, limit: {limit}")
@@ -65,10 +66,13 @@ async def search_profiles(query: str, limit: int = 6):
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/generate-text")
+@api_router.post("/generate-text")
 async def generate_text(request: TextGenerationRequest):
     return await generate_text_handler(request)
 
-@app.get("/api/health")
+@api_router.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+# Include the router
+app.include_router(api_router)
