@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .profile_search import ProfileSearch
+from .text_generation import TextGenerationRequest, generate_text_handler
 from typing import List, Dict, Any
 from fastapi.responses import JSONResponse
 import traceback
@@ -23,6 +24,7 @@ origins = [
     "http://localhost:19000",
     "https://upenn.netlify.app",  # Production Netlify domain
     "https://upenn.netlify.app/",  # Production Netlify domain with trailing slash
+    "https://protective-quietude-production.up.railway.app/",
 ]
 
 app.add_middleware(
@@ -38,7 +40,7 @@ app.add_middleware(
 profile_searcher = ProfileSearch()
 
 @app.get("/api/search")
-async def search_profiles(query: str, limit: int = 50):
+async def search_profiles(query: str, limit: int = 6):
     try:
         logger.debug(f"Received search request with query: {query}, limit: {limit}")
         
@@ -62,6 +64,10 @@ async def search_profiles(query: str, limit: int = 50):
         logger.error(f"Error in search_profiles: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/generate-text")
+async def generate_text(request: TextGenerationRequest):
+    return await generate_text_handler(request)
 
 @app.get("/api/health")
 async def health_check():

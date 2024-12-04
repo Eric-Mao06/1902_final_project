@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '../constants';
+import { StreamingTextBlock } from '../components/streaming-text-block';
 
 interface Profile {
   _id: string;
@@ -35,7 +36,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
       setError('');
 
       try {
-        const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}`, {
+        const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -101,39 +102,25 @@ export default function SearchResults({ query }: SearchResultsProps) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {searchResults.map((profile) => (
-          <Card key={profile._id} className="p-4 flex flex-col">
-            <h2 className="text-xl font-semibold">{profile.name}</h2>
-            {profile.role && (
-              <p className="text-gray-600 dark:text-gray-400">{profile.role}</p>
-            )}
-            {profile.company && (
-              <p className="text-gray-600 dark:text-gray-400">{profile.company}</p>
-            )}
-            {profile.location && (
-              <p className="text-gray-500 dark:text-gray-500 text-sm">{profile.location}</p>
-            )}
-            {profile.summary && (
-              <p className="mt-2 text-sm">{profile.summary}</p>
-            )}
-            {profile.experience && profile.experience.length > 0 && (
-              <div className="mt-2">
-                <h3 className="text-sm font-semibold mb-1">Experience</h3>
-                <ul className="text-sm list-disc list-inside">
-                  {profile.experience.slice(0, 3).map((exp, index) => (
-                    <li key={index} className="text-gray-600 dark:text-gray-400">{exp}</li>
-                  ))}
-                </ul>
+          <Card key={profile._id} className="p-4">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold">{profile.name}</h3>
+                  {profile.role && <p className="text-sm text-muted-foreground">{profile.role}</p>}
+                  {profile.company && <p className="text-sm text-muted-foreground">{profile.company}</p>}
+                  {profile.location && <p className="text-sm text-muted-foreground">{profile.location}</p>}
+                </div>
+                {profile.linkedinUrl && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                      View Profile
+                    </a>
+                  </Button>
+                )}
               </div>
-            )}
-            {profile.linkedinUrl && (
-              <Button
-                variant="outline"
-                className="mt-6"
-                onClick={() => window.open(profile.linkedinUrl, '_blank')}
-              >
-                View LinkedIn Profile →
-              </Button>
-            )}
+              <StreamingTextBlock query={query} profile={profile} />
+            </div>
           </Card>
         ))}
       </div>
