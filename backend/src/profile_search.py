@@ -100,3 +100,48 @@ class ProfileSearch:
         logger.debug(f"Returning top {len(top_results)} results")
         
         return [serialize_mongo_doc(doc) for doc in top_results]
+
+    def get_profile_by_email(self, email: str) -> Dict[str, Any] | None:
+        """Get a profile by email"""
+        try:
+            profile = self.collection.find_one({"email": email})
+            return serialize_mongo_doc(profile) if profile else None
+        except Exception as e:
+            logger.error(f"Error getting profile by email: {str(e)}")
+            raise Exception(f"Failed to get profile: {str(e)}")
+
+    def edit_profile(self, profile_id: str | None, profile_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Edit a profile, create if it doesn't exist"""
+        try:
+            # Remove _id from profile_data if it exists
+            if '_id' in profile_data:
+                del profile_data['_id']
+
+            # Only generate embedding if summary is non-empty
+            if "summary" in profile_data and profile_data["summary"].strip():
+                profile_data["summary_embedding"] = self.generate_embedding(profile_data["summary"])
+            elif "summary" in profile_data:
+                # If summary is empty, remove the embedding
+                profile_data["summary_embedding"] = None
+
+            if profile_id and ObjectId.is_valid(profile_id):
+                # Try to find the existing profile
+                existing_profile = self.collection.find_one({"_id": ObjectId(profile_id)})
+                
+                if existing_profile:
+                    # Update existing profile
+                    self.collection.update_one(
+                        {"_id": ObjectId(profile_id)},
+                        {"$set": profile_data}
+                    )
+                    updated_profile = self.collection.find_one({"_id": ObjectId(profile_id)})
+                    return serialize_mongo_doc(updated_profile)
+            
+            # Create new profile if no valid ID or profile not found
+            result = self.collection.insert_one(profile_data)
+            new_profile = self.collection.find_one({"_id": result.inserted_id})
+            return serialize_mongo_doc(new_profile)
+                
+        except Exception as e:
+            logger.error(f"Error editing/creating profile: {str(e)}")
+            raise Exception(f"Failed to edit/create profile: {str(e)}")

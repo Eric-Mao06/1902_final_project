@@ -74,5 +74,51 @@ async def generate_text(request: TextGenerationRequest):
 async def health_check():
     return {"status": "ok"}
 
+@api_router.get("/profile")
+async def get_profile(email: str):
+    try:
+        logger.debug(f"Getting profile for email: {email}")
+        
+        result = profile_searcher.get_profile_by_email(email=email)
+        if not result:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        # Convert to JSON-safe format
+        json_result = json.loads(dumps({"profile": result}))
+        logger.debug(f"Get profile result: {json_result}")
+        
+        return json_result
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error in get_profile: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/profile/{profile_id}")
+async def edit_profile(profile_id: str, profile_data: Dict[str, Any]):
+    try:
+        logger.debug(f"Editing profile {profile_id} with data: {profile_data}")
+        
+        # Handle the "new" profile case
+        actual_profile_id = None if profile_id == "new" else profile_id
+        
+        result = profile_searcher.edit_profile(
+            profile_id=actual_profile_id,
+            profile_data=profile_data
+        )
+        
+        # Convert to JSON-safe format
+        json_result = json.loads(dumps({"profile": result}))
+        logger.debug(f"Edit result: {json_result}")
+        
+        return json_result
+        
+    except Exception as e:
+        logger.error(f"Error in edit_profile: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router
 app.include_router(api_router)

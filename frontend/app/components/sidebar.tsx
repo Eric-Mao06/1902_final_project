@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { ProfileDialog } from '@/components/profile-dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,11 +15,48 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/app/context/sidebar-context';
 
+interface ProfileData {
+  name: string;
+  email: string;
+  location: string;
+  company: string;
+  role: string;
+  summary: string;
+  photoUrl: string;
+  linkedinUrl: string;
+}
+
 export function Sidebar() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const { isExpanded, setIsExpanded } = useSidebar();
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/profile?email=${encodeURIComponent(session.user.email)}`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            setProfileData(data.profile);
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [session]);
+
+  const handleProfileUpdate = (updatedProfile: ProfileData) => {
+    setProfileData(updatedProfile);
+  };
 
   const handleProfileClick = () => {
     if (session) {
@@ -166,9 +203,9 @@ export function Sidebar() {
                 onClick={handleProfileClick}
               >
                 <div className="relative h-8 w-8 overflow-hidden rounded-lg border-0 bg-gradient-to-br from-green-300 to-blue-300 flex-shrink-0">
-                  {session.user.photoUrl ? (
+                  {profileData?.photoUrl ? (
                     <Image
-                      src={session.user.photoUrl}
+                      src={profileData.photoUrl}
                       alt="Profile"
                       fill
                       className="object-cover"
@@ -176,7 +213,7 @@ export function Sidebar() {
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <span className="text-sm font-medium text-white">
-                        {session.user.name?.charAt(0).toUpperCase() || '👤'}
+                        {profileData?.name?.[0] || session?.user?.name?.[0] || '👤'}
                       </span>
                     </div>
                   )}
@@ -184,10 +221,10 @@ export function Sidebar() {
                 {isExpanded && (
                   <div className="flex flex-1 flex-col justify-center min-w-0">
                     <p className="truncate text-sm font-medium text-left">
-                      {session.user.email}
+                      {profileData?.name || session?.user?.name}
                     </p>
                     <p className="truncate text-xs text-muted-foreground text-left">
-                      {session.user.name}
+                      {profileData?.email || session?.user?.email}
                     </p>
                   </div>
                 )}
@@ -208,17 +245,8 @@ export function Sidebar() {
       <ProfileDialog 
         isOpen={isProfileDialogOpen}
         onClose={() => setIsProfileDialogOpen(false)}
-        profileData={{
-          name: session.user.name || '',
-          email: session.user.email || '',
-          location: session.user.location || '',
-          company: session.user.company || '',
-          role: session.user.role || '',
-          summary: session.user.summary || '',
-          photoUrl: session.user.photoUrl || '',
-          linkedinUrl: session.user.linkedinUrl || '',
-        }}
-        onProfileUpdate={() => setIsProfileDialogOpen(false)}
+        profileData={profileData}
+        onProfileUpdate={handleProfileUpdate}
         session={session}
       />
     </div>

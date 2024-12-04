@@ -11,6 +11,7 @@ import { signIn } from 'next-auth/react';
 import { Session } from 'next-auth';
 
 interface ProfileData {
+  _id?: string;
   name: string;
   email: string;
   location: string;
@@ -33,6 +34,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
   const [editedProfile, setEditedProfile] = useState<ProfileData | null>(
     profileData
       ? {
+          _id: profileData._id,
           name: profileData.name || '',
           email: profileData.email || '',
           location: profileData.location || '',
@@ -50,6 +52,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
   useEffect(() => {
     if (profileData) {
       setEditedProfile({
+        _id: profileData._id,
         name: profileData.name || '',
         email: profileData.email || '',
         location: profileData.location || '',
@@ -91,7 +94,11 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile?email=${encodeURIComponent(editedProfile!.email)}`, {
+      const url = editedProfile!._id 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/profile/${editedProfile!._id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/profile/new`;
+        
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +112,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
       }
 
       const updatedProfile = await response.json();
-      onProfileUpdate!(updatedProfile);
+      onProfileUpdate!(updatedProfile.profile);
       onClose();
     } catch (error) {
       console.error('Error:', error);
@@ -145,6 +152,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
                 onChange={(e) => {
                   if (!editedProfile) return;
                   setEditedProfile({
+                    _id: editedProfile._id,
                     name: e.target.value,
                     email: editedProfile.email || '',
                     location: editedProfile.location || '',
@@ -181,6 +189,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
                 onChange={(e) => {
                   if (!editedProfile) return;
                   setEditedProfile({
+                    _id: editedProfile._id,
                     name: editedProfile.name || '',
                     email: editedProfile.email || '',
                     location: e.target.value,
@@ -201,6 +210,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
                 onChange={(e) => {
                   if (!editedProfile) return;
                   setEditedProfile({
+                    _id: editedProfile._id,
                     name: editedProfile.name || '',
                     email: editedProfile.email || '',
                     location: editedProfile.location || '',
@@ -221,6 +231,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
                 onChange={(e) => {
                   if (!editedProfile) return;
                   setEditedProfile({
+                    _id: editedProfile._id,
                     name: editedProfile.name || '',
                     email: editedProfile.email || '',
                     location: editedProfile.location || '',
@@ -241,6 +252,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
                 onChange={(e) => {
                   if (!editedProfile) return;
                   setEditedProfile({
+                    _id: editedProfile._id,
                     name: editedProfile.name || '',
                     email: editedProfile.email || '',
                     location: editedProfile.location || '',
