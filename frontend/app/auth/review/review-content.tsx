@@ -18,6 +18,7 @@ interface ProfileData {
   summary: string;
   photoUrl: string;
   raw_data: Record<string, unknown>;
+  name: string;
 }
 
 interface ReviewContentProps {
@@ -36,7 +37,7 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
     const loadProfileData = async () => {
       try {
         setIsScraping(true);
-        const response = await fetch(`${API_URL}/api/auth/linkedin-scrape`, {
+        const response = await fetch(`${API_URL}/api/linkedin-scrape`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -64,8 +65,8 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/api/users/create`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/profile/new`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -76,7 +77,8 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
           role: profileData.role,
           summary: profileData.summary,
           linkedin_url: linkedinUrl,
-          raw_data: profileData.raw_data
+          raw_data: profileData.raw_data,
+          name: profileData.name
         }),
       });
 

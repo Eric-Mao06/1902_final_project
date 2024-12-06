@@ -8,6 +8,9 @@ import traceback
 import logging
 from bson.json_util import dumps
 import json
+import os
+import requests
+from google import generativeai
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -41,6 +44,126 @@ app.add_middleware(
 
 # Initialize ProfileSearch
 profile_searcher = ProfileSearch()
+
+# Initialize Gemini
+generativeai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = generativeai.GenerativeModel('gemini-pro')
+
+@api_router.post("/linkedin-scrape")
+async def scrape_linkedin_profile(data: Dict[str, str]):
+    try:
+        linkedin_url = data.get("linkedinUrl")
+        if not linkedin_url:
+            raise HTTPException(status_code=400, detail="LinkedIn URL is required")
+        
+        logger.debug(f"Attempting to scrape LinkedIn URL: {linkedin_url}")
+        
+        # Use scrapin.io API
+        url = "https://api.scrapin.io/enrichment/profile"
+        querystring = {
+            "apikey": os.getenv("SCRAPIN_API_KEY"),
+            "linkedInUrl": linkedin_url
+        }
+        
+        logger.debug(f"Making request to scrapin.io with API key: {os.getenv('SCRAPIN_API_KEY')[:5]}...")
+        logger.debug(f"Query parameters: {querystring}")
+        response = requests.get(url, params=querystring)
+        
+        if response.status_code != 200:
+            logger.error(f"Scrapin.io error: Status {response.status_code}, Response: {response.text}")
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"LinkedIn scraping failed: {response.text}"
+            )
+        
+        profile_data = response.json()
+        raw_profile = str(profile_data)
+        logger.debug(f"Successfully scraped profile data length: {len(raw_profile)}")
+        
+        if not profile_data or "error" in profile_data:
+            error_msg = profile_data.get("error", "Unknown error") if profile_data else "Empty response"
+            raise HTTPException(status_code=400, detail=f"LinkedIn scraping failed: {error_msg}")
+        
+        # Generate summary using Gemini
+        prompt = f"""
+Analyze this LinkedIn profile comprehensively and extract detailed professional information. Generate rich semantic content that captures the person's complete professional identity. The summary should be around 400 words. Format it as one paragraph don't use markdown.
+    
+    Focus on extracting and synthesizing:
+    
+    PROFESSIONAL IDENTITY:
+    - Career trajectory and progression
+    - Industry specializations and domain expertise
+    - Leadership and management experience
+    - Professional achievements and impact
+    - Core competencies and technical skills
+    
+    DOMAIN KNOWLEDGE:
+    - Technical expertise and tools
+    - Industry-specific knowledge
+    - Methodologies and frameworks
+    - Certifications and qualifications
+    
+    IMPACT & ACHIEVEMENTS:
+    - Quantifiable results and metrics
+    - Project outcomes and deliverables
+    - Awards and recognition
+    - Business value created
+        Raw Profile Data:
+        {raw_profile}
+        """
+        
+        logger.debug("Generating summary with Gemini...")
+        response = model.generate_content(prompt)
+        summary = response.text
+        
+        # Extract basic profile info
+        person = profile_data.get("person", {})
+        logger.debug("Person data:", person)
+        
+        location = person.get("location", "")
+        company = person.get("currentCompanyName", "")
+        if not company and person.get("experience"):
+            company = person["experience"][0].get("companyName", "")
+        
+        role = person.get("headline", "")
+        if not role and person.get("experience"):
+            role = person["experience"][0].get("title", "")
+
+        # Get the person's name
+        name = person.get("fullName", "")
+        if not name:
+            name = person.get("name", "")
+        if not name:
+            first_name = person.get("firstName", "")
+            last_name = person.get("lastName", "")
+            name = f"{first_name} {last_name}".strip()
+
+        # Try different possible photo URL fields
+        photo_url = person.get("photoUrl", "")
+        if not photo_url:
+            photo_url = person.get("profilePicture", "")
+        if not photo_url:
+            photo_url = person.get("profileImageUrl", "")
+        if not photo_url:
+            photo_url = person.get("imageUrl", "")
+            
+        logger.debug("Extracted photo URL:", photo_url)
+        
+        return {
+            "location": location,
+            "company": company,
+            "role": role,
+            "summary": summary,
+            "photoUrl": photo_url,
+            "raw_data": profile_data,
+            "name": name
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in scrape_linkedin_profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to scrape LinkedIn profile: {str(e)}")
 
 @api_router.get("/search")
 async def search_profiles(query: str, limit: int = 6):

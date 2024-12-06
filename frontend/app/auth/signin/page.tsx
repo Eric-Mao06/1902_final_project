@@ -15,6 +15,13 @@ export default function SignIn() {
     router.push('/');
   };
 
+  const handleGoogleSignIn = async () => {
+    await signIn('google', { 
+      callbackUrl: '/auth/setup',
+      redirect: true
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center">
       <Card className="p-8 space-y-6 w-full max-w-md">
@@ -23,7 +30,7 @@ export default function SignIn() {
         <div className="space-y-4">
           <Button 
             className="w-full" 
-            onClick={() => signIn('google', { callbackUrl: '/' })}
+            onClick={handleGoogleSignIn}
           >
             Sign in with Google
           </Button>
