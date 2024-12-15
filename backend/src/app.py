@@ -8,7 +8,11 @@ app = FastAPI()
 profile_search = ProfileSearch()
 
 # Configure CORS
-origins = [
+def normalize_url(url: str) -> str:
+    """Remove trailing slash from URL if it exists"""
+    return url.rstrip('/')
+
+origins = [normalize_url(origin) for origin in [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:8081",  # Expo web default port
@@ -16,12 +20,11 @@ origins = [
     "exp://localhost:19000",   # Expo development client
     "http://localhost:19000",
     "https://upenn.netlify.app",  # Production Netlify domain
-    "https://upenn.netlify.app/",  # Production Netlify domain with trailing slash
     "https://protective-quietude-production.up.railway.app",  # Production frontend domain
-    "https://protective-quietude-production.up.railway.app/",  # Production frontend domain with trailing slash
+    "https://protective-quietude-production.up.railway.app/",  # Production frontend domain
     "https://1902finalproject-production.up.railway.app",  # Backend domain
-    "https://1902finalproject-production.up.railway.app/",  # Backend domain with trailing slash
-]
+    "https://1902finalproject-production.up.railway.app/",  # Backend domain
+]]
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +42,17 @@ async def root():
 async def search(query: str):
     results = profile_search.search_profiles(query)
     return {"results": results}
+
+@app.get("/api/profile")
+async def get_profile(email: str):
+    try:
+        profile = profile_search.get_profile_by_email(email)
+        if profile:
+            return {"profile": profile}
+        else:
+            raise HTTPException(status_code=404, detail="Profile not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-text")
 async def generate_text(request_data: TextGenerationRequest):

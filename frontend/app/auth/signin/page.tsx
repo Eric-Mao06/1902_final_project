@@ -16,8 +16,9 @@ export default function SignIn() {
   };
 
   const handleGoogleSignIn = async () => {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || '';
     await signIn('google', { 
-      callbackUrl: '/auth/setup',
+      callbackUrl: `${baseUrl}/auth/setup`,
       redirect: true
     });
   };

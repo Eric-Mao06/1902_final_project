@@ -14,6 +14,7 @@ import {
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/app/context/sidebar-context';
+import { API_URL } from '@/app/constants';
 
 interface ProfileData {
   name: string;
@@ -38,7 +39,7 @@ export function Sidebar() {
       if (session?.user?.email) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/profile?email=${encodeURIComponent(session.user.email)}`
+            `${API_URL}/api/profile?email=${encodeURIComponent(session.user.email)}`
           );
           
           if (response.ok) {
