@@ -60,12 +60,17 @@ async def scrape_linkedin_profile(data: Dict[str, str]):
         
         # Use scrapin.io API
         url = "https://api.scrapin.io/enrichment/profile"
+        api_key = os.getenv("SCRAPIN_API_KEY")
+        if not api_key:
+            logger.error("SCRAPIN_API_KEY environment variable is not set")
+            raise HTTPException(status_code=500, detail="API key configuration error")
+            
         querystring = {
-            "apikey": os.getenv("SCRAPIN_API_KEY"),
+            "apikey": api_key,
             "linkedInUrl": linkedin_url
         }
         
-        logger.debug(f"Making request to scrapin.io with API key: {os.getenv('SCRAPIN_API_KEY')[:5]}...")
+        logger.debug(f"Making request to scrapin.io with API key: {api_key[:5]}...")
         logger.debug(f"Query parameters: {querystring}")
         response = requests.get(url, params=querystring)
         

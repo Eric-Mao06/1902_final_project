@@ -31,7 +31,7 @@ export function Sidebar() {
   const { data: session } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const { isExpanded, setIsExpanded } = useSidebar();
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
 
   useEffect(() => {
     const fetchProfile = async () => {

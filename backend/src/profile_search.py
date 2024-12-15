@@ -135,11 +135,15 @@ class ProfileSearch:
                         {"$set": profile_data}
                     )
                     updated_profile = self.collection.find_one({"_id": ObjectId(profile_id)})
+                    if updated_profile is None:
+                        raise Exception("Failed to retrieve updated profile")
                     return serialize_mongo_doc(updated_profile)
             
             # Create new profile if no valid ID or profile not found
             result = self.collection.insert_one(profile_data)
             new_profile = self.collection.find_one({"_id": result.inserted_id})
+            if new_profile is None:
+                raise Exception("Failed to retrieve newly created profile")
             return serialize_mongo_doc(new_profile)
                 
         except Exception as e:

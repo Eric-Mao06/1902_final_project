@@ -49,10 +49,12 @@ async def generate_text_stream(request: TextGenerationRequest):
         response = await model.generate_content_async(prompt)
         text = response.text
         
-        # Stream the response character by character
-        for char in text:
-            yield char.encode('utf-8')
-            await asyncio.sleep(0.05)
+        # Stream the response in chunks for better performance
+        chunk_size = 100  # Adjust this value based on your needs
+        for i in range(0, len(text), chunk_size):
+            chunk = text[i:i + chunk_size]
+            yield chunk.encode('utf-8')
+            
     except Exception as e:
         error_msg = f"Error during text generation: {str(e)}"
         logger.error(error_msg)

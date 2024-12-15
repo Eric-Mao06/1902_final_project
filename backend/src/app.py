@@ -1,10 +1,11 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from .profile_search import search_profiles
+from .profile_search import ProfileSearch
 from .text_generation import TextGenerationRequest, generate_text_stream
 
 app = FastAPI()
+profile_search = ProfileSearch()
 
 # Configure CORS
 app.add_middleware(
@@ -21,7 +22,7 @@ async def root():
 
 @app.get("/api/search")
 async def search(query: str):
-    results = await search_profiles(query)
+    results = profile_search.search_profiles(query)
     return {"results": results}
 
 @app.post("/api/generate-text")
@@ -41,4 +42,8 @@ async def generate_text(request_data: TextGenerationRequest):
 async def startup_event():
     print("\nRegistered routes:")
     for route in app.routes:
-        print(f"{route.methods} {route.path}")
+        try:
+            route_info = str(route)
+            print(f"{route_info}")
+        except Exception as e:
+            print(f"[Unknown route type] {route}")
