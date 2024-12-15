@@ -28,7 +28,8 @@ origins = [
     "http://localhost:19000",
     "https://upenn.netlify.app",  # Production Netlify domain
     "https://upenn.netlify.app/",  # Production Netlify domain with trailing slash
-    "https://protective-quietude-production.up.railway.app/",
+    "https://protective-quietude-production.up.railway.app",  # Production frontend domain
+    "https://protective-quietude-production.up.railway.app/",  # Production frontend domain with trailing slash
     "https://1902finalproject-production.up.railway.app",  # Backend domain
     "https://1902finalproject-production.up.railway.app/",  # Backend domain with trailing slash
 ]
@@ -39,7 +40,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 # Initialize ProfileSearch

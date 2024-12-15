@@ -8,9 +8,24 @@ app = FastAPI()
 profile_search = ProfileSearch()
 
 # Configure CORS
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:8081",  # Expo web default port
+    "http://127.0.0.1:8081",  # Alternative localhost notation
+    "exp://localhost:19000",   # Expo development client
+    "http://localhost:19000",
+    "https://upenn.netlify.app",  # Production Netlify domain
+    "https://upenn.netlify.app/",  # Production Netlify domain with trailing slash
+    "https://protective-quietude-production.up.railway.app",  # Production frontend domain
+    "https://protective-quietude-production.up.railway.app/",  # Production frontend domain with trailing slash
+    "https://1902finalproject-production.up.railway.app",  # Backend domain
+    "https://1902finalproject-production.up.railway.app/",  # Backend domain with trailing slash
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
