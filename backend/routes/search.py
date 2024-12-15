@@ -3,6 +3,7 @@ from models.user import User
 from dependencies import get_db
 import voyageai
 from typing import List
+from src.text_generation import generate_explanations_parallel
 
 router = APIRouter()
 
@@ -18,6 +19,13 @@ async def search_users(query: str, db = Depends(get_db)):
         # Search for users using the embedding
         user_model = User(db)
         results = await user_model.search_users_by_embedding(query_embedding)
+        
+        # Generate explanations in parallel for all results
+        explanations = await generate_explanations_parallel(query, results)
+        
+        # Add explanations to results
+        for result, explanation in zip(results, explanations):
+            result['explanation'] = explanation
         
         return {"results": results}
     except Exception as e:
