@@ -171,16 +171,17 @@ Analyze this LinkedIn profile comprehensively and extract detailed professional 
         raise HTTPException(status_code=500, detail=f"Failed to scrape LinkedIn profile: {str(e)}")
 
 @api_router.get("/search")
-async def search_profiles(query: str, limit: int = 6):
+async def search_profiles(query: str, limit: int = 6, offset: int = 0):
     try:
-        logger.debug(f"Received search request with query: {query}, limit: {limit}")
+        logger.debug(f"Received search request with query: {query}, limit: {limit}, offset: {offset}")
         
         if not query:
             raise HTTPException(status_code=400, detail="Query parameter is required")
             
         results = profile_searcher.search_profiles(
             query=query,
-            limit=limit
+            limit=limit,
+            offset=offset
         )
         
         # Convert to JSON-safe format

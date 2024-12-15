@@ -65,7 +65,7 @@ class ProfileSearch:
         else:
             raise Exception(f"Error generating embedding: {response.text}")
 
-    def search_profiles(self, query: str, limit: int = 6) -> List[Dict[Any, Any]]:
+    def search_profiles(self, query: str, limit: int = 6, offset: int = 0) -> List[Dict[Any, Any]]:
         """Search for profiles using semantic search with cosine similarity"""
         query_embedding = self.generate_embedding(query)
         query_embedding_np = np.array(query_embedding)
@@ -93,13 +93,14 @@ class ProfileSearch:
         
         logger.debug(f"Processed {len(results_with_scores)} profiles with similarity scores")
         
-        # Sort by similarity score and get top results
+        # Sort by similarity score and get paginated results
         results_with_scores.sort(key=lambda x: x["score"], reverse=True)
-        top_results = results_with_scores[:limit]
+        paginated_results = results_with_scores[offset:offset + limit]
         
-        logger.debug(f"Returning top {len(top_results)} results")
+        logger.debug(f"Returning {len(paginated_results)} results from offset {offset}")
         
-        return [serialize_mongo_doc(doc) for doc in top_results]
+        # Serialize MongoDB documents
+        return [serialize_mongo_doc(result) for result in paginated_results]
 
     def get_profile_by_email(self, email: str) -> Dict[str, Any] | None:
         """Get a profile by email"""

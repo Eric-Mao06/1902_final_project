@@ -28,37 +28,57 @@ export default function SearchResults({ query }: SearchResultsProps) {
   const router = useRouter();
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchResults = async (currentOffset: number, append: boolean = false) => {
+    try {
+      const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}&offset=${currentOffset}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Search failed: ${errorData}`);
+      }
+      
+      const data = await response.json();
+      const newResults = data.results;
+      
+      if (newResults.length === 0) {
+        setHasMore(false);
+      } else {
+        setSearchResults(append ? [...searchResults, ...newResults] : newResults);
+        setOffset(currentOffset + newResults.length);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`Failed to fetch results: ${errorMessage}`);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    await fetchResults(offset, true);
+    setIsLoadingMore(false);
+  };
 
   useEffect(() => {
-    const fetchResults = async () => {
+    const initialFetch = async () => {
       setIsLoading(true);
       setError('');
-
-      try {
-        const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Search failed: ${errorData}`);
-        }
-        
-        const data = await response.json();
-        setSearchResults(data.results);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        setError(`Failed to fetch results: ${errorMessage}`);
-      } finally {
-        setIsLoading(false);
-      }
+      setOffset(0);
+      setHasMore(true);
+      await fetchResults(0);
+      setIsLoading(false);
     };
 
-    fetchResults();
+    initialFetch();
   }, [query]);
 
   if (isLoading) {
@@ -100,30 +120,52 @@ export default function SearchResults({ query }: SearchResultsProps) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Results for &quot;{query}&quot;</h1>
       </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {searchResults.map((profile) => (
-          <Card key={profile._id} className="p-4">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold">{profile.name}</h3>
-                  {profile.role && <p className="text-sm text-muted-foreground">{profile.role}</p>}
-                  {profile.company && <p className="text-sm text-muted-foreground">{profile.company}</p>}
-                  {profile.location && <p className="text-sm text-muted-foreground">{profile.location}</p>}
-                </div>
-                {profile.linkedinUrl && (
-                  <Button variant="ghost" size="sm" asChild>
-                    <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                      View Profile
-                    </a>
-                  </Button>
-                )}
-              </div>
-              <StreamingTextBlock query={query} profile={profile} />
+          <Card key={profile._id} className="p-4 flex flex-col justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">{profile.name}</h2>
+              {profile.role && <p className="text-gray-600 mb-1">{profile.role}</p>}
+              {profile.company && <p className="text-gray-600 mb-1">{profile.company}</p>}
+              {profile.location && <p className="text-gray-600 mb-3">{profile.location}</p>}
+              {profile.summary && (
+                <StreamingTextBlock 
+                  query={query}
+                  profile={profile}
+                />
+              )}
             </div>
+            {profile.linkedinUrl && (
+              <Button
+                className="w-full mt-4"
+                onClick={() => window.open(profile.linkedinUrl, '_blank')}
+              >
+                View LinkedIn Profile
+              </Button>
+            )}
           </Card>
         ))}
       </div>
+
+      {hasMore && (
+        <div className="mt-8 flex justify-center">
+          <Button 
+            onClick={handleLoadMore} 
+            disabled={isLoadingMore}
+            className="min-w-[200px]"
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load More Results'
+            )}
+          </Button>
+        </div>
+      )}
     </main>
   );
 }
