@@ -2,61 +2,110 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { API_URL } from '@/app/constants';
 
 interface ProfileData {
-  name: string;
   location: string;
-  linkedinUrl: string;
   company: string;
   role: string;
   summary: string;
+  photoUrl: string;
+  dataId?: string;  // ID to fetch full data
+  raw_data?: any;   // Full LinkedIn data
+  linkedinUrl: string;
+  name: string;
+  email?: string;
 }
 
 export default function CompleteProfile() {
+  const { data: session } = useSession();
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: '',
     location: '',
-    linkedinUrl: '',
     company: '',
     role: '',
     summary: '',
+    photoUrl: '',
+    linkedinUrl: '',
+    name: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    const savedData = localStorage.getItem('profileData');
-    if (savedData) {
-      setProfileData(JSON.parse(savedData));
-    } else {
-      router.push('/auth/signup');
-    }
+    const loadProfileData = async () => {
+      const savedData = localStorage.getItem('profileData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setProfileData(parsedData);
+
+        // If we have a dataId but no raw_data, fetch the full data
+        if (parsedData.dataId && !parsedData.raw_data) {
+          try {
+            const response = await fetch(`${API_URL}/api/auth/linkedin-data/${parsedData.dataId}`);
+            if (response.ok) {
+              const fullData = await response.json();
+              setProfileData(prev => ({
+                ...prev,
+                raw_data: fullData
+              }));
+              // Update localStorage with full data
+              localStorage.setItem('profileData', JSON.stringify({
+                ...parsedData,
+                raw_data: fullData
+              }));
+            }
+          } catch (err) {
+            console.error('Error fetching full LinkedIn data:', err);
+          }
+        }
+      } else {
+        router.push('/auth/signup');
+      }
+    };
+
+    loadProfileData();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session?.user?.email) {
+      setError('You must be logged in to complete signup');
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch('/api/auth/complete-signup', {
+      const requestData = {
+        ...profileData,
+        email: session.user.email,
+        raw_data: profileData.raw_data || {}
+      };
+      console.log('Sending profile data:', JSON.stringify(requestData, null, 2));
+      
+      const response = await fetch(`${API_URL}/api/auth/complete-signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(profileData),
+        body: JSON.stringify(requestData),
       });
 
+      const responseData = await response.json();
+      console.log('Server response:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to complete signup');
+        throw new Error(responseData.detail || 'Failed to create profile');
       }
 
-      localStorage.removeItem('profileData');
-      router.push('/dashboard'); // or wherever you want to redirect after signup
+      router.push('/');
     } catch (err) {
-      console.error('Signup error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to complete signup. Please try again.');
+      console.error('Profile creation error:', err);
+      console.error('Full error object:', JSON.stringify(err, null, 2));
+      setError(err instanceof Error ? err.message : 'Failed to create profile');
     } finally {
       setLoading(false);
     }

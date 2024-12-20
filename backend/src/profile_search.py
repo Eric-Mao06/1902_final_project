@@ -27,12 +27,36 @@ def serialize_mongo_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
 class ProfileSearch:
     def __init__(self):
         load_dotenv()
-        self.mongo_client = MongoClient(os.getenv('MONGODB_URI'))
-        self.db = self.mongo_client['profilematch']
-        self.collection: Collection = self.db['users']
-        self.voyage_api_key = os.getenv('VOYAGE_API_KEY')
-        self.voyage_api_url = "https://api.voyageai.com/v1/embeddings"
-        self._ensure_vector_search_index()
+        mongodb_uri = os.getenv('MONGODB_URI')
+        logger.info(f"Connecting to MongoDB with URI starting with: {mongodb_uri[:20]}...")
+        
+        try:
+            # Ensure the URI has the correct format
+            if not mongodb_uri.startswith("mongodb://"):
+                mongodb_uri = f"mongodb://{mongodb_uri}"
+            
+            self.mongo_client = MongoClient(
+                mongodb_uri,
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=5000
+            )
+            # Test the connection
+            self.mongo_client.admin.command('ping')
+            logger.info("Successfully connected to MongoDB in ProfileSearch")
+            
+            self.db = self.mongo_client['profilematch']
+            self.collection: Collection = self.db['users']
+            self.voyage_api_key = os.getenv('VOYAGE_API_KEY')
+            if not self.voyage_api_key:
+                logger.error("VOYAGE_API_KEY not found in environment variables")
+            self.voyage_api_url = "https://api.voyageai.com/v1/embeddings"
+            self._ensure_vector_search_index()
+        except Exception as e:
+            logger.error(f"Error connecting to MongoDB in ProfileSearch: {str(e)}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise
     
     def _ensure_vector_search_index(self):
         """Create vector search index if it doesn't exist"""
@@ -65,42 +89,45 @@ class ProfileSearch:
         else:
             raise Exception(f"Error generating embedding: {response.text}")
 
-    def search_profiles(self, query: str, limit: int = 6, offset: int = 0) -> List[Dict[Any, Any]]:
-        """Search for profiles using semantic search with cosine similarity"""
-        query_embedding = self.generate_embedding(query)
-        query_embedding_np = np.array(query_embedding)
-        
-        # Get all profiles with embeddings
-        profiles = list(self.collection.find({"summary_embedding": {"$exists": True}}))
-        logger.debug(f"Found {len(profiles)} profiles with embeddings")
-        
-        # Calculate cosine similarity for each profile
-        results_with_scores = []
-        for profile in profiles:
-            if "summary_embedding" in profile:
-                try:
-                    profile_embedding = np.array(profile["summary_embedding"])
-                    # Calculate cosine similarity
-                    similarity = np.dot(query_embedding_np, profile_embedding) / (
-                        np.linalg.norm(query_embedding_np) * np.linalg.norm(profile_embedding)
-                    )
-                    profile_copy = profile.copy()
-                    profile_copy["score"] = float(similarity)
-                    del profile_copy["summary_embedding"]  # Remove embedding from results
-                    results_with_scores.append(profile_copy)
-                except Exception as e:
-                    logger.error(f"Error processing profile {profile.get('_id')}: {str(e)}")
-        
-        logger.debug(f"Processed {len(results_with_scores)} profiles with similarity scores")
-        
-        # Sort by similarity score and get paginated results
-        results_with_scores.sort(key=lambda x: x["score"], reverse=True)
-        paginated_results = results_with_scores[offset:offset + limit]
-        
-        logger.debug(f"Returning {len(paginated_results)} results from offset {offset}")
-        
-        # Serialize MongoDB documents
-        return [serialize_mongo_doc(result) for result in paginated_results]
+    def search_profiles(self, query: str, limit: int = 6) -> List[Dict[str, Any]]:
+        """Search for profiles using semantic search"""
+        try:
+            logger.info(f"Searching profiles with query: {query}")
+            
+            # Generate embedding for the query
+            logger.info("Generating embedding for query...")
+            query_embedding = self.generate_embedding(query)
+            if not query_embedding:
+                logger.error("Failed to generate embedding for query")
+                return []
+            
+            logger.info("Running MongoDB aggregation pipeline...")
+            # Search for similar profiles using vector similarity search
+            pipeline = [
+                {
+                    "$vectorSearch": {
+                        "index": "vector_index",
+                        "path": "summary_embedding",
+                        "queryVector": query_embedding,
+                        "numCandidates": 100,
+                        "limit": limit
+                    }
+                }
+            ]
+            
+            results = list(self.collection.aggregate(pipeline))
+            logger.info(f"Found {len(results)} results")
+            
+            # Serialize results for JSON response
+            serialized_results = [serialize_mongo_doc(doc) for doc in results]
+            return serialized_results
+            
+        except Exception as e:
+            logger.error(f"Error in search_profiles: {str(e)}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return []
 
     def get_profile_by_email(self, email: str) -> Dict[str, Any] | None:
         """Get a profile by email"""

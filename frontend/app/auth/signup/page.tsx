@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/app/constants';
 
 export default function SignUp() {
   const [linkedinUrl, setLinkedinUrl] = useState('');
@@ -15,7 +16,7 @@ export default function SignUp() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/linkedin-scrape', {
+      const response = await fetch(`${API_URL}/api/auth/linkedin-scrape`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

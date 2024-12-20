@@ -37,7 +37,8 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
     const loadProfileData = async () => {
       try {
         setIsScraping(true);
-        const response = await fetch(`${API_URL}/api/linkedin-scrape`, {
+        // Step 1: Get essential profile data
+        const response = await fetch(`${API_URL}/api/auth/linkedin-scrape`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -51,7 +52,21 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
         }
 
         const data = await response.json();
-        setProfileData(data);
+        
+        // Step 2: Get raw LinkedIn data
+        const rawDataResponse = await fetch(`${API_URL}/api/auth/linkedin-data/${data.dataId}`);
+        if (!rawDataResponse.ok) {
+          setError('Failed to load complete profile data');
+          return;
+        }
+        
+        const rawData = await rawDataResponse.json();
+        
+        // Combine the data
+        setProfileData({
+          ...data,
+          raw_data: rawData
+        });
       } finally {
         setIsScraping(false);
       }
@@ -65,8 +80,8 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/api/profile/new`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/api/auth/complete-signup`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -76,14 +91,16 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
           company: profileData.company,
           role: profileData.role,
           summary: profileData.summary,
-          linkedin_url: linkedinUrl,
+          linkedinUrl: linkedinUrl,
           raw_data: profileData.raw_data,
-          name: profileData.name
+          name: profileData.name,
+          photoUrl: profileData.photoUrl
         }),
       });
 
       if (!response.ok) {
-        setError('Failed to create profile');
+        const errorData = await response.json();
+        setError(errorData.detail || 'Failed to create profile');
         return;
       }
 

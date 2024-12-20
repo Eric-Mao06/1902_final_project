@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -39,7 +40,7 @@ export function Sidebar() {
       if (session?.user?.email) {
         try {
           const response = await fetch(
-            `${API_URL}/api/profile?email=${encodeURIComponent(session.user.email)}`
+            `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`
           );
           
           if (response.ok) {
@@ -64,6 +65,32 @@ export function Sidebar() {
       setIsProfileDialogOpen(true);
     } else {
       router.push('/auth/signin');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!session?.user?.email) return;
+    
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`,
+          {
+            method: 'DELETE',
+          }
+        );
+        
+        if (response.ok) {
+          await signOut();
+          router.push('/');
+        } else {
+          console.error('Failed to delete account');
+          alert('Failed to delete account. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('An error occurred while deleting your account. Please try again later.');
+      }
     }
   };
 
@@ -235,8 +262,15 @@ export function Sidebar() {
               <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
                 Edit Profile
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut()}>
                 Sign Out
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDeleteAccount}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+              >
+                Delete Account
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

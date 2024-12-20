@@ -11,28 +11,12 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
-load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    logger.error("GOOGLE_API_KEY not found in environment variables")
-else:
-    logger.debug("GOOGLE_API_KEY loaded successfully")
-
-# Configure Gemini API
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-1.5-flash-8b')
-
 class TextGenerationRequest(BaseModel):
     query: str
     profile: dict
 
-async def generate_text_stream(request: TextGenerationRequest):
-    if not api_key:
-        yield "Error: Google API key not configured.".encode('utf-8')
-        return
-
-    prompt = f"""
+def create_prompt(request: TextGenerationRequest) -> str:
+    return f"""
     Given a search query: "{request.query}"
     
     And a professional's profile:
@@ -45,27 +29,9 @@ async def generate_text_stream(request: TextGenerationRequest):
     Be specific and highlight relevant aspects of their background.
     """
 
-    try:
-        response = await model.generate_content_async(prompt)
-        text = response.text
-        
-        # Stream the response in chunks for better performance
-        chunk_size = 100  # Adjust this value based on your needs
-        for i in range(0, len(text), chunk_size):
-            chunk = text[i:i + chunk_size]
-            yield chunk.encode('utf-8')
-            
-    except Exception as e:
-        error_msg = f"Error during text generation: {str(e)}"
-        logger.error(error_msg)
-        yield error_msg.encode('utf-8')
-
-async def generate_text_handler(request: TextGenerationRequest):
-    try:
-        return StreamingResponse(
-            generate_text_stream(request),
-            media_type='text/plain'
-        )
-    except Exception as e:
-        logger.error(f"Error during text generation handler: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+def generate_text_handler(request: TextGenerationRequest):
+    prompt = create_prompt(request)
+    return StreamingResponse(
+        content=prompt.encode('utf-8'),
+        media_type="text/event-stream"
+    )

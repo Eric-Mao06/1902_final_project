@@ -40,3 +40,16 @@ async def update_user_profile(email: str, profile_data: Dict[str, Any], db = Dep
         return updated_user
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/profile")
+async def delete_user_profile(email: str, db = Depends(get_db)):
+    try:
+        user_model = User(db)
+        user = await user_model.get_user_by_email(email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        await user_model.delete_user(email)
+        return {"message": "User deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

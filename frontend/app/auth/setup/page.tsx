@@ -25,7 +25,7 @@ export default function SetupPage() {
     // If authenticated, check for profile
     if (status === 'authenticated' && session?.user?.email) {
       setIsLoading(true);
-      fetch(`${API_URL}/api/profile?email=${encodeURIComponent(session.user.email)}`, {
+      fetch(`${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export default function SetupPage() {
       console.log('Scraping LinkedIn URL:', linkedinUrl);
       
       // First, scrape the LinkedIn profile
-      const scrapeResponse = await fetch(`${API_URL}/api/linkedin-scrape`, {
+      const scrapeResponse = await fetch(`${API_URL}/api/auth/linkedin-scrape`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

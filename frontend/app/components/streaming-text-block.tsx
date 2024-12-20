@@ -21,7 +21,7 @@ export function StreamingTextBlock({ query, profile }: StreamingTextBlockProps) 
     let cancelled = false;
 
     async function streamText() {
-      const url = `${API_URL}/api/generate-text`;
+      const url = `${API_URL}/api/generate`;
       console.log('Making request to:', url);
       
       try {

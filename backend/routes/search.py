@@ -3,12 +3,15 @@ from models.user import User
 from dependencies import get_db
 import voyageai
 from typing import List
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.get("/search")
+@router.get("/")  
 async def search_users(query: str, db = Depends(get_db)):
     try:
+        logger.info(f"Searching for users with query: {query}")
         # Generate embedding for the search query
         query_embedding = voyageai.get_embedding(
             query,
@@ -17,8 +20,10 @@ async def search_users(query: str, db = Depends(get_db)):
         
         # Search for users using the embedding
         user_model = User(db)
-        results = await user_model.search_users_by_embedding(query_embedding)
+        results = await user_model.search_users_by_embedding(query_embedding, limit=6)
+        logger.info(f"Found {len(results)} results")
         
         return {"results": results}
     except Exception as e:
+        logger.error(f"Error in search_users: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

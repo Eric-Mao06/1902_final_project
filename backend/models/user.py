@@ -8,23 +8,59 @@ class User:
         self.collection = db.users
 
     async def create_user(self, user_data: Dict[str, Any], raw_linkedin_data: Dict[str, Any], embedding: List[float]) -> str:
-        user_doc = {
-            "email": user_data["email"],
-            "name": user_data["name"],
-            "location": user_data["location"],
-            "linkedinUrl": user_data["linkedinUrl"],
-            "company": user_data["company"],
-            "role": user_data["role"],
-            "summary": user_data["summary"],
-            "photoUrl": user_data.get("photoUrl", ""),
-            "summary_embedding": embedding,
-            "raw_linkedin_data": raw_linkedin_data,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
-        }
-        
-        result = await self.collection.insert_one(user_doc)
-        return str(result.inserted_id)
+        try:
+            # Validate required fields
+            required_fields = {
+                "email": str,
+                "name": str,
+                "location": str,
+                "linkedinUrl": str,
+                "company": str,
+                "role": str,
+                "summary": str
+            }
+            
+            for field, field_type in required_fields.items():
+                if field not in user_data:
+                    raise ValueError(f"Missing required field: {field}")
+                if not isinstance(user_data[field], field_type):
+                    raise ValueError(f"Invalid type for {field}. Expected {field_type.__name__}, got {type(user_data[field]).__name__}")
+            
+            # Validate embedding
+            if not isinstance(embedding, list) or not all(isinstance(x, float) for x in embedding):
+                raise ValueError("Invalid embedding format. Expected list of floats.")
+            
+            # Log raw LinkedIn data
+            print(f"\nRaw LinkedIn data type: {type(raw_linkedin_data)}")
+            print(f"Raw LinkedIn data keys: {raw_linkedin_data.keys() if isinstance(raw_linkedin_data, dict) else 'Not a dictionary'}")
+            
+            user_doc = {
+                "email": user_data["email"],
+                "name": user_data["name"],
+                "location": user_data["location"],
+                "linkedinUrl": user_data["linkedinUrl"],
+                "company": user_data["company"],
+                "role": user_data["role"],
+                "summary": user_data["summary"],
+                "photoUrl": user_data.get("photoUrl", ""),
+                "summary_embedding": embedding,
+                "raw_linkedin_data": raw_linkedin_data,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            print(f"\nCreating user document with fields:")
+            for key, value in user_doc.items():
+                if key != "summary_embedding":  # Skip printing the embedding
+                    print(f"{key}: {'<large_data>' if key == 'raw_linkedin_data' else value}")
+            
+            result = await self.collection.insert_one(user_doc)
+            print(f"\nSuccessfully inserted document with ID: {result.inserted_id}")
+            return str(result.inserted_id)
+            
+        except Exception as e:
+            print(f"Error in create_user: {str(e)}")
+            raise ValueError(f"Failed to create user: {str(e)}")
 
     async def get_user_by_linkedin_url(self, linkedin_url: str) -> Optional[Dict[str, Any]]:
         user = await self.collection.find_one({"linkedinUrl": linkedin_url})
@@ -72,7 +108,7 @@ class User:
             print(f"Error updating user: {e}")
             raise
 
-    async def search_users_by_embedding(self, query_embedding: List[float], limit: int = 10) -> List[Dict[str, Any]]:
+    async def search_users_by_embedding(self, query_embedding: List[float], limit: int = 6) -> List[Dict[str, Any]]:
         """
         Search for users using vector similarity search with the provided query embedding
         """
@@ -124,3 +160,7 @@ class User:
         except Exception as e:
             print(f"Error in search: {e}")
             raise
+
+    async def delete_user(self, email: str) -> bool:
+        result = await self.collection.delete_one({"email": email})
+        return result.deleted_count > 0

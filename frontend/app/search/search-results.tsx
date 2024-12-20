@@ -53,7 +53,11 @@ export default function SearchResults({ query }: SearchResultsProps) {
       if (newResults.length === 0) {
         setHasMore(false);
       } else {
-        setSearchResults(append ? [...searchResults, ...newResults] : newResults);
+        if (append) {
+          setSearchResults(prevResults => [...prevResults, ...newResults]);
+        } else {
+          setSearchResults(newResults);
+        }
         setOffset(currentOffset + newResults.length);
       }
     } catch (err) {
