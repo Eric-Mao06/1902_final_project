@@ -45,6 +45,13 @@ export function Sidebar() {
         return;
       }
 
+      // Check if we're in the signup flow
+      const isSignupFlow = window.location.pathname.includes('/signup');
+      if (isSignupFlow) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         console.log('Fetching profile for email:', session.user.email);
         const response = await fetch(
@@ -76,17 +83,13 @@ export function Sidebar() {
               }
             }
             setProfileData(data.profile);
-          } else {
-            console.error('Profile data not found in response:', data);
           }
-        } else {
-          console.error('Failed to fetch profile:', response.status);
-          // If 404, try to use session data
-          if (response.status === 404 && session.user.name) {
-            console.log('Using session data for profile');
+        } else if (response.status === 404) {
+          // Silently handle 404 during normal operation
+          if (session.user.name) {
             setProfileData({
               name: session.user.name,
-              email: session.user.email,
+              email: session.user.email || '',
               location: '',
               company: '',
               role: '',
@@ -97,7 +100,8 @@ export function Sidebar() {
           }
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        // Silently handle errors during signup flow
+        console.debug('Profile fetch error:', error);
       } finally {
         setIsLoading(false);
       }
