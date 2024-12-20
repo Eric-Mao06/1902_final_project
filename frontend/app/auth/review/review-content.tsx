@@ -104,11 +104,16 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create profile');
-        return;
+        throw new Error(errorData.detail || 'Failed to create profile');
       }
 
-      router.push('/');
+      // First navigate to home page
+      await router.replace('/');
+      // Then force a client-side navigation refresh
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create profile');
     } finally {
       setIsLoading(false);
     }
@@ -181,6 +186,11 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
             <label className="block text-sm font-medium mb-2">Location</label>
             <Input
               value={profileData.location}
+              onChange={(e) =>
+                setProfileData((prev) =>
+                  prev ? { ...prev, location: e.target.value } : null
+                )
+              }
               className="bg-white"
             />
           </div>
@@ -188,6 +198,11 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
             <label className="block text-sm font-medium mb-2">Company</label>
             <Input
               value={profileData.company}
+              onChange={(e) =>
+                setProfileData((prev) =>
+                  prev ? { ...prev, company: e.target.value } : null
+                )
+              }
               className="bg-white"
             />
           </div>
@@ -195,6 +210,11 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
             <label className="block text-sm font-medium mb-2">Role</label>
             <Input
               value={profileData.role}
+              onChange={(e) =>
+                setProfileData((prev) =>
+                  prev ? { ...prev, role: e.target.value } : null
+                )
+              }
               className="bg-white"
             />
           </div>
@@ -202,7 +222,12 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
             <label className="block text-sm font-medium mb-2">Summary</label>
             <Textarea
               value={profileData.summary}
-              className="bg-white h-32"
+              onChange={(e) =>
+                setProfileData((prev) =>
+                  prev ? { ...prev, summary: e.target.value } : null
+                )
+              }
+              className="bg-white min-h-[100px]"
             />
           </div>
           <div className="flex justify-between items-center pt-4">

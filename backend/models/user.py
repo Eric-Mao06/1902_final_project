@@ -2,6 +2,9 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
 from typing import Optional, Dict, Any, List
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class User:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -30,10 +33,6 @@ class User:
             if not isinstance(embedding, list) or not all(isinstance(x, float) for x in embedding):
                 raise ValueError("Invalid embedding format. Expected list of floats.")
             
-            # Log raw LinkedIn data
-            print(f"\nRaw LinkedIn data type: {type(raw_linkedin_data)}")
-            print(f"Raw LinkedIn data keys: {raw_linkedin_data.keys() if isinstance(raw_linkedin_data, dict) else 'Not a dictionary'}")
-            
             user_doc = {
                 "email": user_data["email"],
                 "name": user_data["name"],
@@ -49,71 +48,73 @@ class User:
                 "updated_at": datetime.utcnow()
             }
             
-            print(f"\nCreating user document with fields:")
-            for key, value in user_doc.items():
-                if key != "summary_embedding":  # Skip printing the embedding
-                    print(f"{key}: {'<large_data>' if key == 'raw_linkedin_data' else value}")
-            
             result = await self.collection.insert_one(user_doc)
-            print(f"\nSuccessfully inserted document with ID: {result.inserted_id}")
+            logger.info(f"Created user with ID: {result.inserted_id}")
             return str(result.inserted_id)
             
         except Exception as e:
-            print(f"Error in create_user: {str(e)}")
-            raise ValueError(f"Failed to create user: {str(e)}")
+            logger.error(f"Error in create_user: {str(e)}")
+            raise
 
     async def get_user_by_linkedin_url(self, linkedin_url: str) -> Optional[Dict[str, Any]]:
-        user = await self.collection.find_one({"linkedinUrl": linkedin_url})
-        if user:
-            user["_id"] = str(user["_id"])  # Convert ObjectId to string
-        return user
+        try:
+            user = await self.collection.find_one({"linkedinUrl": linkedin_url})
+            if user:
+                user["_id"] = str(user["_id"])
+            return user
+        except Exception as e:
+            logger.error(f"Error in get_user_by_linkedin_url: {str(e)}")
+            raise
 
     async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
-        user = await self.collection.find_one({"email": email})
-        if user:
-            user["_id"] = str(user["_id"])  # Convert ObjectId to string
-        return user
+        try:
+            user = await self.collection.find_one({"email": email})
+            if user:
+                user["_id"] = str(user["_id"])
+            return user
+        except Exception as e:
+            logger.error(f"Error in get_user_by_email: {str(e)}")
+            raise
 
     async def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
         try:
             user = await self.collection.find_one({"_id": ObjectId(user_id)})
             if user:
-                user["_id"] = str(user["_id"])  # Convert ObjectId to string
+                user["_id"] = str(user["_id"])
             return user
-        except:
-            return None
+        except Exception as e:
+            logger.error(f"Error in get_user_by_id: {str(e)}")
+            raise
 
     async def update_user(self, email: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         try:
-            # Remove email and linkedinUrl from update data if present
-            update_data.pop("email", None)
-            update_data.pop("linkedinUrl", None)
+            logger.debug(f"Updating user {email} with data: {update_data}")
             
-            # Add updated_at timestamp
+            # Remove fields that shouldn't be updated
+            update_data.pop("email", None)
+            update_data.pop("_id", None)  # Remove _id field as it's immutable
             update_data["updated_at"] = datetime.utcnow()
             
             # Perform the update
-            result = await self.collection.update_one(
+            result = await self.collection.find_one_and_update(
                 {"email": email},
-                {"$set": update_data}
+                {"$set": update_data},
+                return_document=True
             )
             
-            if result.modified_count == 0:
-                return None
+            if result:
+                result["_id"] = str(result["_id"])
+                logger.info(f"Successfully updated user {email}")
+            else:
+                logger.warning(f"No user found to update with email {email}")
                 
-            # Fetch and return the updated user
-            updated_user = await self.get_user_by_email(email)
-            return updated_user
+            return result
         except Exception as e:
-            print(f"Error updating user: {e}")
+            logger.error(f"Error in update_user: {str(e)}")
             raise
 
     async def search_users_by_embedding(self, query_embedding: List[float], limit: int = 6) -> List[Dict[str, Any]]:
-        """
-        Search for users using vector similarity search with the provided query embedding
-        """
         try:
-            # Perform vector similarity search using dot product
             pipeline = [
                 {
                     "$addFields": {
@@ -137,30 +138,28 @@ class User:
                     }
                 },
                 {"$sort": {"similarity": -1}},
-                {"$limit": limit},
-                {
-                    "$project": {
-                        "_id": {"$toString": "$_id"},
-                        "name": 1,
-                        "email": 1,
-                        "location": 1,
-                        "company": 1,
-                        "role": 1,
-                        "summary": 1,
-                        "photoUrl": 1,
-                        "linkedinUrl": 1,
-                        "similarity": 1
-                    }
-                }
+                {"$limit": limit}
             ]
             
-            cursor = self.collection.aggregate(pipeline)
-            results = await cursor.to_list(length=limit)
+            results = []
+            async for doc in self.collection.aggregate(pipeline):
+                doc["_id"] = str(doc["_id"])
+                results.append(doc)
+            
             return results
         except Exception as e:
-            print(f"Error in search: {e}")
+            logger.error(f"Error in search_users_by_embedding: {str(e)}")
             raise
 
     async def delete_user(self, email: str) -> bool:
-        result = await self.collection.delete_one({"email": email})
-        return result.deleted_count > 0
+        try:
+            result = await self.collection.delete_one({"email": email})
+            success = result.deleted_count > 0
+            if success:
+                logger.info(f"Successfully deleted user {email}")
+            else:
+                logger.warning(f"No user found to delete with email {email}")
+            return success
+        except Exception as e:
+            logger.error(f"Error in delete_user: {str(e)}")
+            raise

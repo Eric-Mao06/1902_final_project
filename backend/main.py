@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Add the backend directory to the Python path
+backend_dir = str(Path(__file__).parent)
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
+
 from fastapi import FastAPI, HTTPException, Request, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -12,8 +20,6 @@ import logging
 import json
 import os
 from dotenv import load_dotenv
-import sys
-from pathlib import Path
 import requests
 from google import generativeai
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -23,11 +29,6 @@ from starlette.datastructures import Headers
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-# Add the backend directory to the Python path
-backend_dir = str(Path(__file__).parent)
-if backend_dir not in sys.path:
-    sys.path.append(backend_dir)
 
 load_dotenv()
 
