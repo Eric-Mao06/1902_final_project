@@ -18,6 +18,7 @@ interface Profile {
   experience?: string[];
   summary?: string;
   score?: number;
+  explanation?: string;
 }
 
 interface SearchResultsProps {
@@ -126,18 +127,26 @@ export default function SearchResults({ query }: SearchResultsProps) {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {searchResults.map((profile) => (
-          <Card key={profile._id} className="p-4 flex flex-col justify-between">
+        {searchResults.map((profile, index) => (
+          <Card key={`${profile._id}-${index}`} className="p-4 flex flex-col justify-between">
             <div>
               <h2 className="text-xl font-semibold mb-2">{profile.name}</h2>
               {profile.role && <p className="text-gray-600 mb-1">{profile.role}</p>}
               {profile.company && <p className="text-gray-600 mb-1">{profile.company}</p>}
               {profile.location && <p className="text-gray-600 mb-3">{profile.location}</p>}
               {profile.summary && (
-                <StreamingTextBlock 
-                  query={query}
-                  profile={profile}
-                />
+                <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {index < searchResults.length - 6 ? (
+                    // For older results, just show the text without streaming
+                    <p>{profile.explanation}</p>
+                  ) : (
+                    // For new results (last 6), use StreamingTextBlock
+                    <StreamingTextBlock 
+                      query={query}
+                      profile={profile}
+                    />
+                  )}
+                </div>
               )}
             </div>
             {profile.linkedinUrl && (

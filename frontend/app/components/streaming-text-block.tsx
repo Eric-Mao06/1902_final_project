@@ -10,14 +10,20 @@ interface StreamingTextBlockProps {
     role?: string;
     company?: string;
     summary?: string;
+    explanation?: string;
   };
 }
 
 export function StreamingTextBlock({ query, profile }: StreamingTextBlockProps) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(profile.explanation || '');
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // If we already have an explanation, don't regenerate it
+    if (profile.explanation) {
+      return;
+    }
+
     let cancelled = false;
 
     async function streamText() {
@@ -78,6 +84,8 @@ export function StreamingTextBlock({ query, profile }: StreamingTextBlockProps) 
           }
           accumulatedText += chunk;
           setText(accumulatedText);
+          // Update the profile's explanation as we stream
+          profile.explanation = accumulatedText;
         }
       } catch (err) {
         if (!cancelled) {

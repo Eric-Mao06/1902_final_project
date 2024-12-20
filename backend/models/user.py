@@ -113,7 +113,7 @@ class User:
             logger.error(f"Error in update_user: {str(e)}")
             raise
 
-    async def search_users_by_embedding(self, query_embedding: List[float], limit: int = 6) -> List[Dict[str, Any]]:
+    async def search_users_by_embedding(self, query_embedding: List[float], offset: int = 0, limit: int = 6) -> List[Dict[str, Any]]:
         try:
             pipeline = [
                 {
@@ -138,6 +138,7 @@ class User:
                     }
                 },
                 {"$sort": {"similarity": -1}},
+                {"$skip": offset},
                 {"$limit": limit}
             ]
             
