@@ -8,6 +8,9 @@ import voyageai
 from dependencies import get_db
 import uuid
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -80,8 +83,9 @@ async def scrape_linkedin_profile(data: Dict[str, str]):
         company = current_position.get('companyName', '')
         role = profile_data.get('headline', '')
         
-        # Get profile picture
+        # Get profile picture and name
         photo_url = profile_data.get('profilePicture', '')
+        name = profile_data.get('fullName', '')  # Extract name from LinkedIn data
         
         # Generate summary using Gemini
         prompt = f"""
@@ -127,7 +131,7 @@ Analyze this LinkedIn profile comprehensively and extract detailed professional 
             'role': role,
             'summary': summary,
             'photoUrl': photo_url,
-            'name': profile_data.get('fullName', '')
+            'name': name
         }
         
         # Clean up old data
@@ -140,7 +144,7 @@ Analyze this LinkedIn profile comprehensively and extract detailed professional 
             "role": role,
             "summary": summary,
             "photoUrl": photo_url,
-            "name": profile_data.get('fullName', ''),
+            "name": name,
             "dataId": data_id  # Frontend can use this to fetch raw data later
         }
         
@@ -164,22 +168,20 @@ async def get_user_profile(
     db = Depends(get_db)
 ):
     try:
-        print(f"\n=== Getting user profile for email: {email} ===")
+        logger.info(f"Getting user profile for email: {email}")
         
         user_model = User(db)
         user = await user_model.get_user_by_email(email)
         
         if not user:
-            print(f"No user found for email: {email}")
+            logger.error(f"No user found for email: {email}")
             raise HTTPException(status_code=404, detail="User not found")
         
         # Convert ObjectId to string for JSON serialization
         if '_id' in user:
             user['_id'] = str(user['_id'])
-        
-        print(f"\nRaw user data from MongoDB:")
-        print(user)
             
+        # Format response data
         response_data = {
             "name": user.get("name"),
             "email": user.get("email"),
@@ -189,17 +191,15 @@ async def get_user_profile(
             "summary": user.get("summary"),
             "linkedinUrl": user.get("linkedinUrl"),
             "photoUrl": user.get("photoUrl"),
+            "_id": user.get("_id")
         }
         
-        print(f"\nFormatted response data:")
-        for key, value in response_data.items():
-            print(f"{key}: {value}")
-        
-        return response_data
+        logger.debug(f"Formatted response data: {response_data}")
+        return {"profile": response_data}
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error in get_user_profile: {e}")
+        logger.error(f"Error in get_user_profile: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/complete-signup")

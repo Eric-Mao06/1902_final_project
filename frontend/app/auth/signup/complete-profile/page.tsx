@@ -79,9 +79,11 @@ export default function CompleteProfile() {
     setError('');
 
     try {
+      // Update the requestData to include the user's name from Google session
       const requestData = {
         ...profileData,
         email: session.user.email,
+        name: session.user.name || profileData.name, // Use Google name if available
         raw_data: profileData.raw_data || {}
       };
       console.log('Sending profile data:', JSON.stringify(requestData, null, 2));
@@ -101,6 +103,8 @@ export default function CompleteProfile() {
         throw new Error(responseData.detail || 'Failed to create profile');
       }
 
+      // Clear the stored profile data
+      localStorage.removeItem('profileData');
       router.push('/');
     } catch (err) {
       console.error('Profile creation error:', err);

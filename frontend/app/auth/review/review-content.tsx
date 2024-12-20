@@ -62,9 +62,13 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
         
         const rawData = await rawDataResponse.json();
         
+        // Use session name if available and LinkedIn name is empty
+        const name = data.name || session?.user?.name || '';
+        
         // Combine the data
         setProfileData({
           ...data,
+          name,
           raw_data: rawData
         });
       } finally {
@@ -73,7 +77,7 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
     };
 
     loadProfileData();
-  }, [linkedinUrl]);
+  }, [linkedinUrl, session]);
 
   const handleSubmit = async () => {
     if (!session?.user?.email || !profileData) return;
@@ -87,13 +91,13 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
         },
         body: JSON.stringify({
           email: session.user.email,
+          name: profileData.name || session?.user?.name || '', // Use session name as fallback
           location: profileData.location,
           company: profileData.company,
           role: profileData.role,
           summary: profileData.summary,
           linkedinUrl: linkedinUrl,
           raw_data: profileData.raw_data,
-          name: profileData.name,
           photoUrl: profileData.photoUrl
         }),
       });
@@ -161,35 +165,44 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
             </div>
           )}
           <div>
+            <label className="block text-sm font-medium mb-2">Name</label>
+            <Input
+              value={profileData.name}
+              onChange={(e) =>
+                setProfileData((prev) =>
+                  prev ? { ...prev, name: e.target.value } : null
+                )
+              }
+              placeholder="Your name"
+              className="bg-white"
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium mb-2">Location</label>
             <Input
               value={profileData.location}
-              readOnly
-              className="bg-muted"
+              className="bg-white"
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Company</label>
             <Input
               value={profileData.company}
-              readOnly
-              className="bg-muted"
+              className="bg-white"
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Role</label>
             <Input
               value={profileData.role}
-              readOnly
-              className="bg-muted"
+              className="bg-white"
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Summary</label>
             <Textarea
               value={profileData.summary}
-              readOnly
-              className="bg-muted h-32"
+              className="bg-white h-32"
             />
           </div>
           <div className="flex justify-between items-center pt-4">

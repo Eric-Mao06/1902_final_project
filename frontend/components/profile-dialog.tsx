@@ -31,26 +31,13 @@ interface ProfileDialogProps {
 }
 
 export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, session }: ProfileDialogProps) {
-  const [editedProfile, setEditedProfile] = useState<ProfileData | null>(
-    profileData
-      ? {
-          _id: profileData._id,
-          name: profileData.name || '',
-          email: profileData.email || '',
-          location: profileData.location || '',
-          company: profileData.company || '',
-          role: profileData.role || '',
-          summary: profileData.summary || '',
-          photoUrl: profileData.photoUrl || '',
-          linkedinUrl: profileData.linkedinUrl || '',
-        }
-      : null
-  );
+  const [editedProfile, setEditedProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (profileData) {
+      console.log('Setting edited profile with data:', profileData);
       setEditedProfile({
         _id: profileData._id,
         name: profileData.name || '',
@@ -82,6 +69,21 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
             >
               Sign in with Google
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!editedProfile) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Loading Profile...</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         </DialogContent>
       </Dialog>
