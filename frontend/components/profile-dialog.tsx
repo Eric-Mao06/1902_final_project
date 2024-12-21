@@ -96,7 +96,8 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
     setError(null);
 
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile?email=${editedProfile!.email}`;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL!.replace(/\/$/, ''); // Remove trailing slash if it exists
+      const url = `${baseUrl}/api/users/profile?email=${editedProfile!.email}`;
         
       const response = await fetch(url, {
         method: 'PUT',

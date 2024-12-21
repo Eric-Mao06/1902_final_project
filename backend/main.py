@@ -61,7 +61,9 @@ origins = [
     "http://localhost:19000",
     "https://upenn.netlify.app",
     "https://protective-quietude-production.up.railway.app",
+    "https://protective-quietude-production.up.railway.app/",
     "https://1902finalproject-production.up.railway.app",
+    "https://1902finalproject-production.up.railway.app/",
 ]
 
 app.add_middleware(
