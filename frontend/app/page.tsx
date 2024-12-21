@@ -6,11 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
-import { useSidebar } from './context/sidebar-context';
 
 export default function HomePage() {
   const router = useRouter();
-  const { isExpanded } = useSidebar();
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,9 +76,7 @@ export default function HomePage() {
   return (
     <div className="flex-1 transition-all duration-300 ease-in-out">
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className={`w-full max-w-2xl px-4 transition-all duration-300 ease-in-out ${
-          isExpanded ? 'translate-x-[40px]' : 'translate-x-[-20px]'
-        }`}>
+        <div className={`w-full max-w-2xl px-4 transition-all duration-300 ease-in-out`}>
           <div className="flex flex-col items-center">
             <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-4xl text-center mb-8 lg:mb-10">
               Where Ambition Meets{" "}

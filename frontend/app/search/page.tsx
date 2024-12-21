@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import SearchResults from './search-results';
@@ -10,8 +10,13 @@ function SearchPageContent() {
   const router = useRouter();
   const query = searchParams.get('query');
 
+  useEffect(() => {
+    if (!query) {
+      router.replace('/');
+    }
+  }, [query, router]);
+
   if (!query) {
-    router.replace('/');
     return null;
   }
 

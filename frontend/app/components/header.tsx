@@ -2,118 +2,208 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { ProfileDialog } from '@/components/profile-dialog';
 import { useState, useEffect } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { API_URL } from '@/app/constants';
 
-interface ProfileUpdateData {
-  // Add any additional fields that might be updated
-  name?: string;
-  email?: string;
-  location?: string;
-  company?: string;
-  role?: string;
-  summary?: string;
-  linkedinUrl?: string;
-  photoUrl?: string;
+interface ProfileData {
+  name: string;
+  email: string;
+  location: string;
+  company: string;
+  role: string;
+  summary: string;
+  photoUrl: string;
+  linkedinUrl: string;
 }
 
 export default function Header() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.user) {
-      // Debug session data
-      console.log('Session user:', session.user);
+    const fetchProfile = async () => {
+      if (status === 'loading') return;
       
-      const profileData = {
-        name: session.user.name || '',
-        email: session.user.email || '',
-        location: session.user.location || '',
-        company: session.user.company || '',
-        role: session.user.role || '',
-        summary: session.user.summary || '',
-        photoUrl: session.user.photoUrl || '',
-        linkedinUrl: session.user.linkedinUrl || '',
-      };
-      
-      // Debug profile data
-      console.log('Profile data:', profileData);
-    }
-  }, [session]);
+      if (!session?.user?.email) {
+        setIsLoading(false);
+        return;
+      }
 
-  if (status !== 'authenticated') {
-    return null;
-  }
+      try {
+        console.log('Fetching profile for email:', session.user.email);
+        const response = await fetch(
+          `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.profile) {
+            console.log('Received profile data:', data.profile);
+            // If name is empty in profile but exists in session, use session name
+            if (!data.profile.name && session.user.name) {
+              data.profile.name = session.user.name;
+              // Update the profile with the session name
+              const updateResponse = await fetch(
+                `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    name: session.user.name,
+                  }),
+                }
+              );
+              if (!updateResponse.ok) {
+                console.error('Failed to update profile with session name');
+              }
+            }
+            setProfileData(data.profile);
+          }
+        } else if (response.status === 404) {
+          // Silently handle 404 during normal operation
+          if (session.user.name) {
+            setProfileData({
+              name: session.user.name,
+              email: session.user.email || '',
+              location: '',
+              company: '',
+              role: '',
+              summary: '',
+              photoUrl: session.user.image || '',
+              linkedinUrl: ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const profileData = {
-    name: session.user.name || '',
-    email: session.user.email || '',
-    location: session.user.location || '',
-    company: session.user.company || '',
-    role: session.user.role || '',
-    summary: session.user.summary || '',
-    photoUrl: session.user.photoUrl || '',
-    linkedinUrl: session.user.linkedinUrl || '',
+    fetchProfile();
+  }, [session, status]);
+
+  const handleProfileUpdate = (updatedProfile: ProfileData) => {
+    setProfileData(updatedProfile);
   };
 
-  const handleProfileUpdate = (updatedProfile: ProfileUpdateData) => {
-    // Here you would typically update the session data
-    console.log('Profile updated:', updatedProfile);
+  const handleDeleteAccount = async () => {
+    if (!session?.user?.email) return;
+    
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`,
+          {
+            method: 'DELETE',
+          }
+        );
+        
+        if (response.ok) {
+          await signOut();
+          router.push('/');
+        } else {
+          console.error('Failed to delete account');
+          alert('Failed to delete account. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('An error occurred while deleting your account. Please try again later.');
+      }
+    }
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <button 
+          <Button
+            variant="ghost"
+            className="px-2 text-base hover:bg-transparent hover:text-primary"
             onClick={() => router.push('/')}
-            className="text-lg font-semibold"
           >
-            linkd
-          </button>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setIsProfileDialogOpen(true)}
-            className="relative h-8 w-8 rounded-full overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity"
-          >
-            {session.user.photoUrl ? (
-              <Image
-                src={session.user.photoUrl}
-                alt="Profile"
-                className="h-full w-full object-cover"
-                width={32}
-                height={32}
-                onError={(e) => {
-                  console.log('Failed to load image:', session.user.photoUrl);
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                }}
-              />
-            ) : null}
-            <div className={`h-full w-full bg-gray-200 flex items-center justify-center ${session.user.photoUrl ? 'hidden' : ''}`}>
-              <span className="text-sm text-gray-500">👤</span>
-            </div>
-          </button>
-          <Button 
-            variant="ghost" 
-            onClick={() => router.push('/api/auth/signout')}
-          >
-            Sign out
+            <Image
+              src="/Heading.png"
+              alt="Linkd Logo"
+              width={60}
+              height={20}
+              className="h-8 w-auto"
+              priority
+            />
           </Button>
         </div>
+
+        <div className="flex items-center gap-4">
+          {status === 'authenticated' && session?.user ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/search?query=')}
+                className="px-4 py-2"
+              >
+                New Search
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profileData?.photoUrl ?? session.user.image ?? undefined} alt={profileData?.name || 'User'} />
+                      <AvatarFallback>
+                        {profileData?.name ? profileData.name[0].toUpperCase() : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
+                    Edit Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Sign out
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleDeleteAccount}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    Delete Account
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Button onClick={() => signIn('google')} variant="outline">
+              Sign in
+            </Button>
+          )}
+        </div>
       </div>
-      <ProfileDialog
-        isOpen={isProfileDialogOpen}
-        onClose={() => setIsProfileDialogOpen(false)}
-        profileData={profileData}
-        onProfileUpdate={handleProfileUpdate}
-        session={session}
-      />
+      {status === 'authenticated' && (
+        <ProfileDialog
+          isOpen={isProfileDialogOpen}
+          onClose={() => setIsProfileDialogOpen(false)}
+          profileData={profileData}
+          onProfileUpdate={handleProfileUpdate}
+          session={session}
+        />
+      )}
     </header>
   );
 }
