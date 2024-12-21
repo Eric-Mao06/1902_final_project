@@ -3,11 +3,13 @@
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 
 export default function SignIn() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   const handleSkipSignIn = () => {
     // Set cookie that expires in 24 hours
@@ -28,6 +30,13 @@ export default function SignIn() {
       <Card className="p-8 space-y-6 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center">Welcome to Linkd</h1>
         <p className="text-center text-muted-foreground">Sign in to connect with Penn alumni</p>
+        
+        {error === 'AccessDenied' && (
+          <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
+            Only @upenn.edu email addresses are allowed to sign in.
+          </div>
+        )}
+
         <div className="space-y-4">
           <Button 
             className="w-full" 

@@ -60,7 +60,14 @@ export default function SetupPage() {
 
     try {
       setIsLoading(true);
-      console.log('Scraping LinkedIn URL:', linkedinUrl);
+      
+      // Format the LinkedIn URL
+      let formattedUrl = linkedinUrl.trim();
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = `https://${formattedUrl}`;
+      }
+      
+      console.log('Scraping LinkedIn URL:', formattedUrl);
       
       // First, scrape the LinkedIn profile
       const scrapeResponse = await fetch(`${API_URL}/api/auth/linkedin-scrape`, {
@@ -68,7 +75,7 @@ export default function SetupPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ linkedinUrl }),
+        body: JSON.stringify({ linkedinUrl: formattedUrl }),
       });
 
       const responseText = await scrapeResponse.text();
@@ -88,7 +95,7 @@ export default function SetupPage() {
       }
       
       // After successful scraping, go to review page with the data
-      router.push(`/auth/review?linkedinUrl=${encodeURIComponent(linkedinUrl)}&data=${encodeURIComponent(JSON.stringify(profileData))}`);
+      router.push(`/auth/review?linkedinUrl=${encodeURIComponent(formattedUrl)}&data=${encodeURIComponent(JSON.stringify(profileData))}`);
     } catch (error) {
       console.error('Error:', error);
       alert(error instanceof Error ? error.message : 'Failed to process LinkedIn URL. Please try again.');
@@ -118,11 +125,11 @@ export default function SetupPage() {
           <h1 className="text-2xl font-bold">Complete Your Profile</h1>
           <p className="text-gray-500">Please enter your LinkedIn profile URL to continue</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Input
-              type="url"
-              placeholder="https://www.linkedin.com/in/your-profile"
+              type="text"
+              placeholder="linkedin.com/in/your-profile"
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}
               required

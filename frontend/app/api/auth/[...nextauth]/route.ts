@@ -10,6 +10,14 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user }) {
+      // Only allow @upenn.edu email addresses
+      const emailDomain = user.email?.split('@')[1];
+      if (!emailDomain?.endsWith('upenn.edu')) {
+        return false; // Block sign in
+      }
+      return true;
+    },
     async redirect({ url, baseUrl }) {
       // After sign in, always redirect to setup
       if (url === baseUrl || url === `${baseUrl}/`) {
@@ -23,6 +31,7 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/auth/signin',
+    error: '/auth/signin', // Add this to handle auth errors
   },
 } as NextAuthOptions);
 
