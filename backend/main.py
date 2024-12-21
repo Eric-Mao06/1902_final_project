@@ -42,6 +42,16 @@ class CustomHeaderMiddleware(BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = "frame-ancestors 'self'"
         return response
 
+class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        # Only enforce HTTPS on Railway (production)
+        if os.getenv('RAILWAY_ENVIRONMENT_NAME') and response.status_code == 307:
+            location = response.headers.get('location', '')
+            if location.startswith('http://'):
+                response.headers['location'] = location.replace('http://', 'https://', 1)
+        return response
+
 app = FastAPI()
 
 # Initialize services
@@ -65,6 +75,9 @@ origins = [
     "https://1902finalproject-production.up.railway.app",
     "https://1902finalproject-production.up.railway.app/",
 ]
+
+# Add HTTPS redirect middleware first
+app.add_middleware(HTTPSRedirectMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
