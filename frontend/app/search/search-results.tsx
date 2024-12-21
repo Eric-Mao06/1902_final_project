@@ -36,7 +36,8 @@ export default function SearchResults({ query }: SearchResultsProps) {
 
   const fetchResults = useCallback(async (currentOffset: number, append: boolean = false) => {
     try {
-      const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}&offset=${currentOffset}`, {
+      const baseUrl = API_URL.replace(/\/$/, ''); // Remove trailing slash if it exists
+      const response = await fetch(`${baseUrl}/api/search?query=${encodeURIComponent(query)}&offset=${currentOffset}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
