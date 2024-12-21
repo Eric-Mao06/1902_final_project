@@ -12,7 +12,7 @@ interface ProfileData {
   summary: string;
   photoUrl: string;
   dataId?: string;  // ID to fetch full data
-  raw_data?: any;   // Full LinkedIn data
+  raw_data?: Record<string, unknown>;   // Full LinkedIn data
   linkedinUrl: string;
   name: string;
   email?: string;

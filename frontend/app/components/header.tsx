@@ -32,14 +32,12 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (status === 'loading') return;
       
       if (!session?.user?.email) {
-        setIsLoading(false);
         return;
       }
 
@@ -92,8 +90,6 @@ export default function Header() {
         }
       } catch (error) {
         console.error('Profile fetch error:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchResults = async (currentOffset: number, append: boolean = false) => {
+  const fetchResults = useCallback(async (currentOffset: number, append: boolean = false) => {
     try {
       const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}&offset=${currentOffset}`, {
         method: 'GET',
@@ -65,7 +65,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to fetch results: ${errorMessage}`);
     }
-  };
+  }, [query]);
 
   const handleLoadMore = async () => {
     setIsLoadingMore(true);
@@ -84,7 +84,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
     };
 
     initialFetch();
-  }, [query]);
+  }, [query, fetchResults]);
 
   if (isLoading) {
     return (
