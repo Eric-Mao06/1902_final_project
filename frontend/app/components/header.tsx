@@ -138,10 +138,11 @@ export default function Header() {
             <Image
               src="/Heading.png"
               alt="Linkd Logo"
-              width={60}
-              height={20}
+              width={480}
+              height={160}
               className="h-8 w-auto"
               priority
+              quality={100}
             />
           </Button>
         </div>

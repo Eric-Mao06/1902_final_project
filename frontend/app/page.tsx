@@ -117,24 +117,15 @@ export default function HomePage() {
               {error && <p className="text-red-500/70 mt-2 text-center">{error}</p>}
 
               {/* "Try asking" buttons section */}
-              <div className="mt-6">
-                <div className="flex flex-wrap justify-center gap-2 text-sm">
+              <div className="w-full flex flex-col items-center gap-2 mt-6">
+                <div className="flex flex-wrap gap-2 justify-center">
                   <Button 
                     variant="outline" 
                     size="sm"
                     className="text-xs sm:text-sm py-1 px-2 sm:px-3"
-                    onClick={() => handleTryAsking("Alumni working on tech startups")}
+                    onClick={() => handleTryAsking("Alumni mentors in Philadelphia")}
                   >
-                    Alumni working on tech startups 
-                    <ArrowUpRight className="w-3 h-3 ml-1" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-xs sm:text-sm py-1 px-2 sm:px-3"
-                    onClick={() => handleTryAsking("Alumni mentors in data science")}
-                  >
-                    Alumni mentors in data science
+                    Alumni mentors in Philadelphia
                     <ArrowUpRight className="w-3 h-3 ml-1" />
                   </Button>
                   <Button 
@@ -147,6 +138,15 @@ export default function HomePage() {
                     <ArrowUpRight className="w-3 h-3 ml-1" />
                   </Button>
                 </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs sm:text-sm py-1 px-2 sm:px-3"
+                  onClick={() => handleTryAsking("Alumni working on tech startups")}
+                >
+                  Alumni working on tech startups
+                  <ArrowUpRight className="w-3 h-3 ml-1" />
+                </Button>
               </div>
             </div>
           </div>
