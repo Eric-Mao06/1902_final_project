@@ -3,17 +3,15 @@
 @tailwind utilities;
 
 /* Prevent zoom on focus for mobile devices */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="search"],
-input[type="tel"],
-textarea {
-  font-size: 16px; /* Prevents zoom on iOS devices */
-  -webkit-text-size-adjust: 100%;
+input,
+select,
+textarea,
+button {
+  font-size: 16px !important; /* Prevents zoom on iOS devices */
+  touch-action: manipulation;
 }
 
+/* Control body scroll behavior */
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
