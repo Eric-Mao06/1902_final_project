@@ -14,15 +14,16 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "Linkd",
   description: "Connect with Penn alumni",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   icons: {
     icon: '/globe.svg',
     shortcut: '/globe.svg',
