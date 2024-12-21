@@ -17,6 +17,12 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Linkd",
   description: "Connect with Penn alumni",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
