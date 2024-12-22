@@ -36,7 +36,7 @@ class VectorSearch:
         }
         
         data = {
-            "model": "voyage-3",
+            "model": "voyage-3-large",
             "input": text
         }
         
