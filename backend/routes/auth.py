@@ -89,29 +89,17 @@ async def scrape_linkedin_profile(data: Dict[str, str]):
         
         # Generate summary using Gemini
         prompt = f"""
-Analyze this LinkedIn profile comprehensively and extract detailed professional information. Generate rich semantic content that captures the person's complete professional identity. The summary should be around 400 words. Format it as one paragraph don't use markdown.
-    
-    Focus on extracting and synthesizing:
-    
-    PROFESSIONAL IDENTITY:
-    - Career trajectory and progression
-    - Industry specializations and domain expertise
-    - Leadership and management experience
-    - Professional achievements and impact
-    - Core competencies and technical skills
-    
-    DOMAIN KNOWLEDGE:
-    - Technical expertise and tools
-    - Industry-specific knowledge
-    - Methodologies and frameworks
-    - Certifications and qualifications
-    
-    IMPACT & ACHIEVEMENTS:
-    - Quantifiable results and metrics
-    - Project outcomes and deliverables
-    - Awards and recognition
-    - Business value created
-        Raw Profile Data:
+You are an AI assistant that specializes in generating concise professional summaries for a knowledge database. You will be given raw JSON data containing a person's LinkedIn profile information. Your goal is to:
+
+Parse the JSON carefully to extract the most relevant details (e.g., name, education, positions, key accomplishments, honors).
+Produce a single-paragraph summary that is succinct, factual, and professional.
+Avoid including personal contact details, links, or any extraneous information (e.g., email addresses).
+Focus on the individual’s academic background, professional experience, notable projects, and honors.
+Write in the third person, using a neutral, professional tone.
+Ensure the paragraph is 300 words.
+Do not output anything other than this single-paragraph summary. Do not format the text with markdown. If data is missing or not relevant, simply omit it. If there is no data at all, return an empty string.
+
+Here is the raw JSON (do not summarize this instruction text, only the JSON content below):
         {raw_profile}
         """
         
@@ -242,7 +230,7 @@ async def complete_signup(
             
             embedding = voyageai.get_embedding(
                 user_data["summary"],
-                model="voyage-3"
+                model="voyage-3-large"
             )
             print(f"Generated embedding length: {len(embedding)}")
             
