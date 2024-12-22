@@ -58,7 +58,7 @@ async def update_user_profile(email: str, profile_data: Dict[str, Any], db = Dep
             try:
                 embedding = voyageai.get_embedding(
                     profile_data["summary"],
-                    model="voyage-3"
+                    model="voyage-3-large"
                 )
                 profile_data["summary_embedding"] = embedding
             except Exception as e:

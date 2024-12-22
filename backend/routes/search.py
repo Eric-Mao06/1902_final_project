@@ -15,7 +15,7 @@ async def search_users(query: str, offset: int = 0, db = Depends(get_db)):
         # Generate embedding for the search query
         query_embedding = voyageai.get_embedding(
             query,
-            model="voyage-3"
+            model="voyage-3-large"
         )
         
         # Search for users using the embedding

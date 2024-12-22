@@ -142,9 +142,9 @@ export default function HomePage() {
                   variant="outline" 
                   size="sm"
                   className="text-xs sm:text-sm py-1 px-2 sm:px-3"
-                  onClick={() => handleTryAsking("Alumni who have been through ycombinator")}
+                  onClick={() => handleTryAsking("Alumni working in biotech")}
                 >
-                  Alumni who have been through ycombinator
+                  Alumni working in biotech
                   <ArrowUpRight className="w-3 h-3 ml-1" />
                 </Button>
               </div>

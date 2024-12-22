@@ -81,7 +81,7 @@ class ProfileSearch:
         response = requests.post(
             self.voyage_api_url,
             headers=headers,
-            json={"input": text, "model": "voyage-3"}
+            json={"input": text, "model": "voyage-3-large"}
         )
         
         if response.status_code == 200:
