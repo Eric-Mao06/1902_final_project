@@ -45,10 +45,11 @@ class User:
             netloc = netloc + 'linkedin.com'
             
         # Reconstruct the URL
+        path = parsed.path.rstrip('/') + '/'  # Ensure single trailing slash
         normalized = parsed._replace(
             scheme='https',
             netloc=netloc,
-            path=parsed.path
+            path=path
         ).geturl()
         
         return normalized
