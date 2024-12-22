@@ -215,8 +215,14 @@ async def complete_signup(
         existing_user = await user_model.get_user_by_linkedin_url(user_data.get("linkedinUrl"))
         if existing_user:
             print(f"Found existing user: {existing_user}")
-            raise HTTPException(status_code=400, detail="User with this LinkedIn URL already exists")
-        
+            # Instead of raising an error, try to claim the profile
+            claimed_profile = await user_model.claim_profile(user_data.get("linkedinUrl"), user_data.get("email"))
+            if claimed_profile:
+                print(f"Successfully claimed profile for user: {claimed_profile['_id']}")
+                return {"userId": claimed_profile["_id"], "claimed": True}
+            else:
+                raise HTTPException(status_code=400, detail="Failed to claim existing profile")
+
         print("\nGenerating embedding...")
         try:
             # Check if VoyageAI key is set

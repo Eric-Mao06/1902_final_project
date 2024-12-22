@@ -3,12 +3,55 @@ from bson import ObjectId
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 import logging
+from urllib.parse import urlparse, urljoin
 
 logger = logging.getLogger(__name__)
 
 class User:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db.users
+
+    @staticmethod
+    def normalize_linkedin_url(url: str) -> str:
+        """
+        Normalizes LinkedIn URLs to ensure consistent format.
+        Handles variations like:
+        - linkedin.com/in/username
+        - www.linkedin.com/in/username
+        - https://linkedin.com/in/username
+        - https://www.linkedin.com/in/username
+        """
+        if not url:
+            return url
+            
+        # Remove any whitespace
+        url = url.strip()
+        
+        # Add https:// if no protocol specified
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+            
+        # Parse the URL
+        parsed = urlparse(url)
+        
+        # Ensure www and linkedin.com are present
+        netloc = parsed.netloc
+        if not netloc.startswith('www.'):
+            if netloc.startswith('linkedin.com'):
+                netloc = 'www.' + netloc
+            else:
+                netloc = 'www.linkedin.com'
+        elif not netloc.endswith('linkedin.com'):
+            netloc = netloc + 'linkedin.com'
+            
+        # Reconstruct the URL
+        normalized = parsed._replace(
+            scheme='https',
+            netloc=netloc,
+            path=parsed.path
+        ).geturl()
+        
+        return normalized
 
     async def create_user(self, user_data: Dict[str, Any], raw_linkedin_data: Dict[str, Any], embedding: List[float]) -> str:
         try:
@@ -32,6 +75,9 @@ class User:
             # Validate embedding
             if not isinstance(embedding, list) or not all(isinstance(x, float) for x in embedding):
                 raise ValueError("Invalid embedding format. Expected list of floats.")
+            
+            # Normalize LinkedIn URL
+            user_data["linkedinUrl"] = self.normalize_linkedin_url(user_data["linkedinUrl"])
             
             user_doc = {
                 "email": user_data["email"],
@@ -58,7 +104,9 @@ class User:
 
     async def get_user_by_linkedin_url(self, linkedin_url: str) -> Optional[Dict[str, Any]]:
         try:
-            user = await self.collection.find_one({"linkedinUrl": linkedin_url})
+            # Normalize the URL before querying
+            normalized_url = self.normalize_linkedin_url(linkedin_url)
+            user = await self.collection.find_one({"linkedinUrl": normalized_url})
             if user:
                 user["_id"] = str(user["_id"])
             return user
@@ -111,6 +159,38 @@ class User:
             return result
         except Exception as e:
             logger.error(f"Error in update_user: {str(e)}")
+            raise
+
+    async def claim_profile(self, linkedin_url: str, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Claims an existing profile by updating its email address.
+        Returns the updated user profile if successful, None if profile not found.
+        """
+        try:
+            # Normalize the URL before querying
+            normalized_url = self.normalize_linkedin_url(linkedin_url)
+            
+            # Find the profile by LinkedIn URL
+            user = await self.collection.find_one({"linkedinUrl": normalized_url})
+            if not user:
+                return None
+                
+            # Update the email
+            result = await self.collection.find_one_and_update(
+                {"linkedinUrl": normalized_url},
+                {"$set": {
+                    "email": email,
+                    "updated_at": datetime.utcnow()
+                }},
+                return_document=True
+            )
+            
+            if result:
+                result["_id"] = str(result["_id"])
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in claim_profile: {str(e)}")
             raise
 
     async def search_users_by_embedding(self, query_embedding: List[float], offset: int = 0, limit: int = 6) -> List[Dict[str, Any]]:
