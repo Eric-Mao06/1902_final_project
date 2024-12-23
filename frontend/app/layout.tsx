@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: 'Linkd',
     images: [
       {
-        url: '/LinkdPreview.png',
+        url: 'https://pennlinkd.com/LinkdPreview.png',
         width: 1200,
         height: 630,
         alt: 'Linkd Preview Image',
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Linkd',
     description: 'Connect with school alumni',
-    images: ['/LinkdPreview.png'],
+    images: ['https://pennlinkd.com/LinkdPreview.png'],
   },
 };
 
