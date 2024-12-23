@@ -74,6 +74,8 @@ origins = [
     "https://protective-quietude-production.up.railway.app/",
     "https://1902finalproject-production.up.railway.app",
     "https://1902finalproject-production.up.railway.app/",
+    "https://pennlinkd.com/",
+    "https://pennlinkd.com",
 ]
 
 # Add HTTPS redirect middleware first
