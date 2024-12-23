@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 import Header from "./components/header";
+import MetaTags from "./components/meta-tags";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,50 +21,17 @@ export const viewport = {
   userScalable: false,
 };
 
-export const metadata: Metadata = {
-  title: "Linkd",
-  description: "Connect with school alumni",
-  icons: {
-    icon: '/globe.svg',
-    shortcut: '/globe.svg',
-    apple: '/globe.svg',
-  },
-  metadataBase: new URL('https://pennlinkd.com'),
-  openGraph: {
-    title: 'Linkd',
-    description: 'Connect with school alumni',
-    url: 'https://pennlinkd.com',
-    siteName: 'Linkd',
-    locale: 'en_US',
-    type: 'website',
-    images: [{
-      url: '/opengraph-image.png',
-      width: 1200,
-      height: 630,
-      alt: 'Linkd - Connect with school alumni'
-    }]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Linkd',
-    description: 'Connect with school alumni',
-    images: [{
-      url: '/twitter-image.png',
-      width: 1200,
-      height: 630,
-      alt: 'Linkd - Connect with school alumni'
-    }]
-  },
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col overflow-auto`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <MetaTags />
+      </head>
+      <body className="antialiased min-h-screen flex flex-col overflow-auto" suppressHydrationWarning>
         <Providers>
           <div className="flex flex-col min-h-screen">
             <Header />
