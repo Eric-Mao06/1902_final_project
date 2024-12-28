@@ -5,7 +5,7 @@ import { ComparisonTool } from "../../components/ComparisonTool";
 import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "../constants";
 
-interface Profile {
+export interface Profile {
     _id: string;
     name: string;
     photoUrl: string;

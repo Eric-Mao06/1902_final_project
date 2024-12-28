@@ -3,48 +3,46 @@
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-interface ProfileProps {
-    name: string;
-    linkedinUrl: string;
-    photoUrl: string;
-    summary: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    raw_linkedin_data: any;
-    location: string;
-    role: string;
-    elo: number;
-}
+import { Profile } from "@/app/elo/page";
+import Image from "next/image";
 
 interface ComparisonProps {
-    profileLeft: ProfileProps;
-    profileRight: ProfileProps;
+    profileLeft: Profile;
+    profileRight: Profile;
     onVote: (vote: "left" | "right" | "equal") => void;
 }
 
-const ProfileCard: React.FC<{ profile: ProfileProps; onClick: () => void }> = ({ profile, onClick }) => {
+const ProfileCard: React.FC<{ profile: Profile; onClick: () => void }> = ({ profile, onClick }) => {
     if (!profile) {
         return <div className="text-red-500">Profile data is missing</div>;
     }
 
-    console.log(profile);
-
     return (
-        <Card className="w-64 shadow-lg cursor-pointer hover:animate-shake" onClick={onClick}>
-            <CardHeader className="flex flex-col items-center bg-gray-100 p-4">
-                <CardTitle className="text-lg font-semibold">{profile.name || "Unknown"}</CardTitle>
-                <p className="text-sm text-gray-500">Elo: {profile.elo}</p> 
+        <Card className="h-full w-full shadow-none rounded-none cursor-pointer hover:bg-gray-50" onClick={onClick}>
+            <CardHeader className="flex flex-col items-center p-6 pt-16">
+                <Image
+                    src={profile.photoUrl || "https://placehold.co/100x100"}
+                    alt={`${profile.name || "Unknown"}'s profile`}
+                    width={800}
+                    height={800}
+                    className="w-32 h-32 rounded-full object-cover mb-6"
+                />
+                <CardTitle className="text-2xl font-semibold">{profile.name || "Unknown"}</CardTitle>
+                <p className="text-lg text-gray-500">Elo: {profile.elo}</p>
             </CardHeader>
-            <CardContent className="p-4">
-                <p className="text-sm text-gray-600 text-center">{profile.location || "Location not available"}</p>
-                <p className="text-sm text-gray-600 text-center">{profile.role || "Role not available"}</p>
+            <CardContent className="p-6">
+                <div className="space-y-4">
+                    <p className="text-lg text-gray-600 text-center">{profile.role || "No headline available"}</p>
+                    <p className="text-lg text-gray-600 text-center">{profile.location || "Location not available"}</p>
+                </div>
             </CardContent>
-            <CardFooter className="flex justify-center bg-gray-100 p-4">
+            <CardFooter className="flex justify-center p-6">
                 <a
                     href={profile.linkedinUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline text-sm"
+                    className="text-blue-500 hover:underline text-lg"
+                    onClick={(e) => e.stopPropagation()}
                 >
                     View LinkedIn Profile
                 </a>
@@ -55,22 +53,30 @@ const ProfileCard: React.FC<{ profile: ProfileProps; onClick: () => void }> = ({
 
 const ComparisonTool: React.FC<ComparisonProps> = ({ profileLeft, profileRight, onVote }) => {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
-            <h1 className="text-2xl font-bold mb-8">LinkedIn Profile Comparison</h1>
-            <div className="flex flex-row gap-8 items-center">
-                {/* Left Profile */}
-                <ProfileCard profile={profileLeft} onClick={() => onVote("left")} />
+        <div className="fixed inset-0 flex flex-col overflow-hidden">
 
-                {/* VS and Equal Button */}
-                <div className="flex flex-col items-center gap-2">
-                    <div className="text-xl font-bold">VS</div>
-                    <Button className="w-20" onClick={() => onVote("equal")}>
-                        Equal
-                    </Button>
+            
+            {/* Split Screen Layout */}
+            <div className="flex flex-1">
+                {/* Left Profile */}
+                <div className="w-1/2">
+                    <ProfileCard profile={profileLeft} onClick={() => onVote("left")} />
                 </div>
 
                 {/* Right Profile */}
-                <ProfileCard profile={profileRight} onClick={() => onVote("right")} />
+                <div className="w-1/2">
+                    <ProfileCard profile={profileRight} onClick={() => onVote("right")} />
+                </div>
+            </div>
+
+            {/* Centered Equal Button */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                <Button 
+                    className="w-28 h-28 rounded-lg text-lg font-semibold"
+                    onClick={() => onVote("equal")}
+                >
+                    Equal
+                </Button>
             </div>
         </div>
     );
