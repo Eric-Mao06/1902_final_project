@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from src.profile_search import ProfileSearch
 from src.text_generation import TextGenerationRequest, create_prompt
-from routes import auth, users, search, elo
+from routes import auth, users, search, elo, leaderboard
 from bson.json_util import dumps
 import traceback
 import logging
@@ -91,6 +91,7 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(search.router, prefix="/api/search", tags=["search"])
 app.include_router(elo.router, prefix="/api/elo", tags=["elo"])
+app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["leaderboard"])
 
 @app.get("/")
 async def root():
