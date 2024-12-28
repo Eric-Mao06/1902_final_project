@@ -15,6 +15,7 @@ if __name__ == "__main__":
             ("access-control-max-age", "1000"),
             ("access-control-allow-headers", "*"),
             ("access-control-expose-headers", "*"),
+            ("access-control-allow-origin", "*"),   
             ("large-allocation", "true")
         ]
     )

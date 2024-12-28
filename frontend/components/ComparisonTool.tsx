@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 
 interface ProfileProps {
     name: string;
-    headline: string;
-    image: string;
-    url: string;
+    linkedinUrl: string;
+    photoUrl: string;
+    summary: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    raw_linkedin_data: any;
     location: string;
-    currentPosition: string;
-    elo: number; // Elo rating
+    role: string;
+    elo: number;
 }
 
 interface ComparisonProps {
@@ -25,25 +27,21 @@ const ProfileCard: React.FC<{ profile: ProfileProps; onClick: () => void }> = ({
         return <div className="text-red-500">Profile data is missing</div>;
     }
 
+    console.log(profile);
+
     return (
         <Card className="w-64 shadow-lg cursor-pointer hover:animate-shake" onClick={onClick}>
             <CardHeader className="flex flex-col items-center bg-gray-100 p-4">
-                <img
-                    src={profile.image || "https://placehold.co/100x100"} // Fallback image
-                    alt={`${profile.name || "Unknown"}'s profile`}
-                    className="w-20 h-20 rounded-full object-cover mb-4"
-                />
                 <CardTitle className="text-lg font-semibold">{profile.name || "Unknown"}</CardTitle>
-                <p className="text-sm text-gray-500">Elo: {profile.elo}</p> {/* Display Elo rating */}
+                <p className="text-sm text-gray-500">Elo: {profile.elo}</p> 
             </CardHeader>
             <CardContent className="p-4">
-                <p className="text-sm text-gray-600 text-center">{profile.headline || "No headline available"}</p>
                 <p className="text-sm text-gray-600 text-center">{profile.location || "Location not available"}</p>
-                <p className="text-sm text-gray-600 text-center">{profile.currentPosition || "Position not available"}</p>
+                <p className="text-sm text-gray-600 text-center">{profile.role || "Role not available"}</p>
             </CardContent>
             <CardFooter className="flex justify-center bg-gray-100 p-4">
                 <a
-                    href={profile.url || "#"}
+                    href={profile.linkedinUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline text-sm"
