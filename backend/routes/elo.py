@@ -25,7 +25,7 @@ async def vote(vote_request: VoteRequest):
         if vote_request.result not in ["left", "right", "equal"]:
             raise HTTPException(status_code=400, detail="Invalid result value")
 
-        new_rating_a, new_rating_b = await elo_system.vote(
+        new_rating_a, new_rating_b, changes = await elo_system.vote(
             vote_request.profile_id_a,
             vote_request.profile_id_b,
             vote_request.result
@@ -36,6 +36,10 @@ async def vote(vote_request: VoteRequest):
             "new_ratings": {
                 "profile_a": new_rating_a,
                 "profile_b": new_rating_b
+            },
+            "elo_changes": {
+                "profile_a": changes[0],
+                "profile_b": changes[1]
             }
         }
     except Exception as e:

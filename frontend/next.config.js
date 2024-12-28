@@ -4,6 +4,7 @@ const nextConfig = {
     domains: [
       'media.licdn.com',
       'lh3.googleusercontent.com',
+      'media.istockphoto.com'
     ],
   },
 }
