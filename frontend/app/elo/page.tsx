@@ -47,7 +47,7 @@ export default function Elo() {
 
     useEffect(() => {
         if(session.status === "unauthenticated") {
-            router.push('/');
+            router.push('/leaderboard');
         } else if(session.status === "loading") {
             setIsAuthenticated(false);
         } else {
