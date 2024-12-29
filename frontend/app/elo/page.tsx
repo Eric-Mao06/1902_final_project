@@ -48,13 +48,18 @@ export default function Elo() {
 
     useEffect(() => {
         if(session.status === "unauthenticated") {
-            router.push('/leaderboard');
+            toast({
+                variant: "destructive",
+                title: "Authentication Required",
+                description: "Only users who are logged in can access alumni ranking"
+            });
+            router.replace('/leaderboard?from=elo');
         } else if(session.status === "loading") {
             setIsAuthenticated(false);
         } else {
             setIsAuthenticated(true);
         }
-    }, [session.status, router]);
+    }, [session.status, router, toast]);
 
     const fetchNewPair = useCallback(async () => {
         try {

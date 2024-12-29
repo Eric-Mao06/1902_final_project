@@ -6,6 +6,8 @@ import { API_URL } from "../constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from 'next/navigation';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface LeaderboardEntry {
     _id: string;
@@ -20,7 +22,15 @@ interface LeaderboardEntry {
 export default function LeaderboardPage() {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showAuthAlert, setShowAuthAlert] = useState(false);
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get('from') === 'elo') {
+            setShowAuthAlert(true);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchLeaderboard = async () => {
@@ -51,15 +61,23 @@ export default function LeaderboardPage() {
 
     if (isLoading) {
         return (
-            <div className="flex min-h-screen items-center justify-center">
+            <div className="flex justify-center items-center min-h-screen">
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto py-8 px-4">
-            <h1 className="text-3xl font-bold mb-8 text-center">Profile Rankings</h1>
+        <div className="container mx-auto px-4 py-8">
+            {showAuthAlert && (
+                <Alert variant="destructive" className="mb-4">
+                    <AlertTitle>Authentication Required</AlertTitle>
+                    <AlertDescription>
+                        Only users who are logged in can access alumni ranking
+                    </AlertDescription>
+                </Alert>
+            )}
+            <h1 className="text-3xl font-bold mb-8 text-center">Alumni Leaderboard</h1>
             <div className="grid gap-4 max-w-3xl mx-auto">
                 {leaderboard.map((entry, index) => (
                     <Card 
