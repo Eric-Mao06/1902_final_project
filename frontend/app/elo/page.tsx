@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "../constants";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export interface Profile {
     _id: string;
@@ -129,26 +130,23 @@ export default function Elo() {
         fetchNewPair();
     }, [fetchNewPair]);
 
-    if (!isAuthenticated || isLoading || !profileLeft || !profileRight) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
-            </div>
-        );
-    }
-
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
-            <h1 className="text-3xl font-bold mb-8">Profile Comparison</h1>
-            <ComparisonTool 
-                profileLeft={profileLeft} 
-                profileRight={profileRight} 
-                onVote={handleVote}
-                showElo={showElo}
-                eloChanges={eloChanges}
-                newElo={newRatings}
-                onNextPair={handleNextPair}
-            />
-        </div>
+        <main className="min-h-screen w-full">
+            {isLoading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            ) : isAuthenticated && profileLeft && profileRight ? (
+                <ComparisonTool
+                    profileLeft={profileLeft}
+                    profileRight={profileRight}
+                    onVote={handleVote}
+                    showElo={showElo}
+                    eloChanges={eloChanges}
+                    newElo={newRatings}
+                    onNextPair={handleNextPair}
+                />
+            ) : null}
+        </main>
     );
 }
