@@ -25,8 +25,8 @@ def create_prompt(request: TextGenerationRequest) -> str:
     Company: {request.profile.get('company', 'N/A')}
     Summary: {request.profile.get('summary', 'N/A')}
     
-    Explain in 2-3 sentences why this professional appeared in the search results and how their experience relates to the query.
-    Be specific and highlight relevant aspects of their background.
+    In 2–3 sentences, explain exactly why this professional appears in the search results, 
+    highlighting only the most relevant aspects of their experience in relation to the query.
     """
 
 def generate_text_handler(request: TextGenerationRequest):
