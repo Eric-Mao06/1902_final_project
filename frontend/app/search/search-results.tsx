@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '../constants';
-import { StreamingTextBlock } from '../components/streaming-text-block';
+import { StreamingTextBlock } from '../../components/streaming-text-block';
 
 interface Profile {
   _id: string;
