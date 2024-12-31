@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '@/app/constants';
 import Image from 'next/image';
+import { MultiStepLoader } from '@/components/ui/multi-step-loader';
 
 interface ProfileData {
   location: string;
@@ -122,8 +123,28 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
   if (isScraping) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 animate-spin mb-4" />
-        <p className="text-lg">Fetching your LinkedIn profile...</p>
+        <MultiStepLoader 
+            loadingStates={[
+              {
+                text: "Analyzing your work experience..."
+              },
+              {
+                text: "Processing your skills and achievements..."
+              },
+              {
+                text: "Extracting relevant qualifications..."
+              },
+              {
+                text: "Organizing your professional data..."
+              },
+              {
+                text: "Finalizing your profile review..."
+              }
+            ]}
+            loop={false}
+            duration={5000}
+            loading={isScraping}
+        />  
       </div>
     );
   }

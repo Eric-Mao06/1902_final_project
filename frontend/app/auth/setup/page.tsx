@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '@/app/constants';
+import { MultiStepLoader } from '@/components/ui/multi-step-loader';
 
 export default function SetupPage() {
   const [linkedinUrl, setLinkedinUrl] = useState('');
@@ -24,7 +25,6 @@ export default function SetupPage() {
 
     // If authenticated, check for profile
     if (status === 'authenticated' && session?.user?.email) {
-      setIsLoading(true);
       fetch(`${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`, {
         method: 'GET',
         headers: {
@@ -104,7 +104,7 @@ export default function SetupPage() {
   };
 
   // Show loading state
-  if (status === 'loading' || (status === 'authenticated' && isLoading)) {
+  if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -115,6 +115,35 @@ export default function SetupPage() {
   // Show nothing while redirecting
   if (status === 'unauthenticated') {
     return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <MultiStepLoader 
+            loadingStates={[
+              {
+                text: "Initiating LinkedIn profile setup..."
+              },
+              {
+                text: "Validating your profile URL..."
+              },
+              {
+                text: "Establishing secure connection..."
+              },
+              {
+                text: "Beginning data collection..."
+              },
+              {
+                text: "Starting profile analysis..."
+              }
+            ]}
+            loop={false}
+            duration={3000}
+            loading={isLoading}
+        />  
+      </div>
+    );
   }
 
   // Show LinkedIn URL input
@@ -144,14 +173,7 @@ export default function SetupPage() {
             className="w-full"
             disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              'Continue'
-            )}
+            Continue
           </Button>
         </form>
       </Card>
