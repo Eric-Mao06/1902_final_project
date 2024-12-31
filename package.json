@@ -6,11 +6,5 @@
     "start-frontend": "cd frontend && npm run dev",
     "start-backend": "cd backend && python run.py",
     "dev": "concurrently \"npm run start-backend\" \"npm run start-frontend\""
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
-  "dependencies": {
-    "framer-motion": "^11.15.0"
   }
 }
