@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from models.user import User
+from src.user import User
 from dependencies import get_db
 import voyageai
 from typing import List

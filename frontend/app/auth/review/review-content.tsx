@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '@/app/constants';
 import Image from 'next/image';
+import { MultiStepLoader } from '@/components/ui/multi-step-loader';
 
 interface ProfileData {
   location: string;
@@ -52,24 +53,24 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
         }
 
         const data = await response.json();
-        
+
         // Step 2: Get raw LinkedIn data
         const rawDataResponse = await fetch(`${API_URL}/api/auth/linkedin-data/${data.dataId}`);
         if (!rawDataResponse.ok) {
           setError('Failed to load complete profile data');
           return;
         }
-        
+
         const rawData = await rawDataResponse.json();
-        
+
         // Use session name if available and LinkedIn name is empty
         const name = data.name || session?.user?.name || '';
-        
+
         // Combine the data
         setProfileData({
           ...data,
           name,
-          raw_data: rawData
+          raw_data: rawData,
         });
       } finally {
         setIsScraping(false);
@@ -98,7 +99,7 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
           summary: profileData.summary,
           linkedinUrl: linkedinUrl,
           raw_data: profileData.raw_data,
-          photoUrl: profileData.photoUrl
+          photoUrl: profileData.photoUrl,
         }),
       });
 
@@ -122,8 +123,28 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
   if (isScraping) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 animate-spin mb-4" />
-        <p className="text-lg">Fetching your LinkedIn profile...</p>
+        <MultiStepLoader
+          loadingStates={[
+            {
+              text: 'Analyzing your work experience...',
+            },
+            {
+              text: 'Processing your skills and achievements...',
+            },
+            {
+              text: 'Extracting relevant qualifications...',
+            },
+            {
+              text: 'Organizing your professional data...',
+            },
+            {
+              text: 'Finalizing your profile review...',
+            },
+          ]}
+          loop={false}
+          duration={5000}
+          loading={isScraping}
+        />
       </div>
     );
   }

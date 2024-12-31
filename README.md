@@ -27,7 +27,7 @@ Linkd is a web application to help undergraduate students connect with industry 
 - Google Cloud Project with OAuth 2.0 configured
 
 ## 🔧 Environment Variables
-Create a `.env.local` file in the frontend directory:
+Create a `.env` file in the frontend directory:
 
 ```bash
 NEXTAUTH_URL=http://localhost:3000
@@ -37,7 +37,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 NEXT_PUBLIC_API_URL=your_next_public_api_url
 ```
 
-Create a `.env.local` file in the backend directory:
+Create a `.env` file in the backend directory:
 
 ```bash
 SCRAPIN_API_KEY=your_scrapin_api_key
@@ -71,6 +71,12 @@ npm install
 ```bash
 cd frontend
 npm run dev
+```
+
+4. Run the backend server
+```bash
+cd backend
+python main.py
 ```
 
 ## 📁 Project Structure

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowUp, ArrowUpRight } from 'lucide-react';
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function HomePage() {
   const router = useRouter();
@@ -14,11 +14,11 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const placeholders = useMemo(() => [
-    "Who are the alumni working in artificial intelligence at Google?",
-    "Who can help me understand what it's like to work in consulting?",
-    "Which graduates are working in renewable energy startups?",
-    "Who went to graduate school after working for a few years?",
-    "Alumni who studied abroad and now work internationally"
+    'Who are the alumni working in artificial intelligence at Google?',
+    'Who can help me understand what it\'s like to work in consulting?',
+    'Which graduates are working in renewable energy startups?',
+    'Who went to graduate school after working for a few years?',
+    'Alumni who studied abroad and now work internationally',
   ], []);
 
   const [currentPlaceholder, setCurrentPlaceholder] = useState(placeholders[0]);
@@ -26,14 +26,14 @@ export default function HomePage() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setIsPlaceholderVisible(false); 
+      setIsPlaceholderVisible(false);
       setTimeout(() => {
-        setCurrentPlaceholder(current => {
+        setCurrentPlaceholder((current) => {
           const currentIndex = placeholders.indexOf(current);
           return placeholders[(currentIndex + 1) % placeholders.length];
         });
-        setIsPlaceholderVisible(true); 
-      }, 200); 
+        setIsPlaceholderVisible(true);
+      }, 200);
     }, 4000);
 
     return () => clearInterval(intervalId);
@@ -76,10 +76,17 @@ export default function HomePage() {
   return (
     <div className="flex-1 transition-all duration-300 ease-in-out">
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className={`w-full max-w-2xl px-4 transition-all duration-300 ease-in-out`}>
+        <div className={'w-full max-w-2xl px-4 transition-all duration-300 ease-in-out'}>
           <div className="flex flex-col items-center">
+            <div
+              onClick={() => router.push('/elo')}
+              className="mb-6 px-4 py-2 border border-black hover:bg-black/5 cursor-pointer rounded-full text-sm flex items-center gap-1 transition-colors"
+            >
+              We just launched alumni ranking, click here to try it!
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
             <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-4xl text-center mb-8 lg:mb-10">
-              Where Ambition Meets{" "}
+              Where Ambition Meets{' '}
               <span className="text-black dark:text-white inline-block">
                 Experience.
               </span>
@@ -104,8 +111,8 @@ export default function HomePage() {
                     {!searchQuery && currentPlaceholder}
                   </motion.span>
                 </AnimatePresence>
-                <Button 
-                  className="absolute right-2 bottom-2 w-8 h-8 p-0 flex items-center justify-center" 
+                <Button
+                  className="absolute right-2 bottom-2 w-8 h-8 p-0 flex items-center justify-center"
                   size="sm"
                   onClick={handleSearch}
                   disabled={isLoading}
@@ -119,30 +126,30 @@ export default function HomePage() {
               {/* "Try asking" buttons section */}
               <div className="w-full flex flex-col items-center gap-2 mt-6">
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="text-xs sm:text-sm py-1 px-2 sm:px-3"
-                    onClick={() => handleTryAsking("Alumni mentors in Palo Alto")}
+                    onClick={() => handleTryAsking('Alumni mentors in Palo Alto')}
                   >
                     Alumni mentors in Palo Alto
                     <ArrowUpRight className="w-3 h-3 ml-1" />
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="text-xs sm:text-sm py-1 px-2 sm:px-3"
-                    onClick={() => handleTryAsking("Alumni working on tech startups")}
+                    onClick={() => handleTryAsking('Alumni working on tech startups')}
                   >
                     Alumni working on tech startups
                     <ArrowUpRight className="w-3 h-3 ml-1" />
                   </Button>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   className="text-xs sm:text-sm py-1 px-2 sm:px-3"
-                  onClick={() => handleTryAsking("Alumni working in biotech")}
+                  onClick={() => handleTryAsking('Alumni working in biotech')}
                 >
                   Alumni working in biotech
                   <ArrowUpRight className="w-3 h-3 ml-1" />

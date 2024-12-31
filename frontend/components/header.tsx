@@ -2,18 +2,18 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { ProfileDialog } from '@/components/profile-dialog';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { API_URL } from '@/app/constants';
 
 interface ProfileData {
@@ -36,7 +36,7 @@ export default function Header() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (status === 'loading') return;
-      
+
       if (!session?.user?.email) {
         return;
       }
@@ -46,7 +46,7 @@ export default function Header() {
         const response = await fetch(
           `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`
         );
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.profile) {
@@ -84,7 +84,7 @@ export default function Header() {
               role: '',
               summary: '',
               photoUrl: session.user.image || '',
-              linkedinUrl: ''
+              linkedinUrl: '',
             });
           }
         }
@@ -102,7 +102,7 @@ export default function Header() {
 
   const handleDeleteAccount = async () => {
     if (!session?.user?.email) return;
-    
+
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try {
         const response = await fetch(
@@ -111,7 +111,7 @@ export default function Header() {
             method: 'DELETE',
           }
         );
-        
+
         if (response.ok) {
           await signOut();
           router.push('/');
@@ -152,10 +152,17 @@ export default function Header() {
             <>
               <Button
                 variant="outline"
-                onClick={() => router.push('/search?query=')}
+                onClick={() => router.push('/elo')}
                 className="px-4 py-2"
               >
-                New Search
+                Rank Alumni
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/leaderboard')}
+                className="px-4 py-2"
+              >
+                Alumni Leaderboard
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

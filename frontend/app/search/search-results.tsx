@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from '../constants';
-import { StreamingTextBlock } from '../components/streaming-text-block';
+import { StreamingTextBlock } from '../../components/streaming-text-block';
 
 interface Profile {
   _id: string;
@@ -43,20 +43,20 @@ export default function SearchResults({ query }: SearchResultsProps) {
           'Accept': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.text();
         throw new Error(`Search failed: ${errorData}`);
       }
-      
+
       const data = await response.json();
       const newResults = data.results;
-      
+
       if (newResults.length === 0) {
         setHasMore(false);
       } else {
         if (append) {
-          setSearchResults(prevResults => [...prevResults, ...newResults]);
+          setSearchResults((prevResults) => [...prevResults, ...newResults]);
         } else {
           setSearchResults(newResults);
         }
@@ -126,7 +126,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Results for &quot;{query}&quot;</h1>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {searchResults.map((profile, index) => (
           <Card key={`${profile._id}-${index}`} className="p-4 flex flex-col justify-between">
@@ -142,7 +142,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
                     <p>{profile.explanation}</p>
                   ) : (
                     // For new results (last 6), use StreamingTextBlock
-                    <StreamingTextBlock 
+                    <StreamingTextBlock
                       query={query}
                       profile={profile}
                     />
@@ -164,8 +164,8 @@ export default function SearchResults({ query }: SearchResultsProps) {
 
       {hasMore && (
         <div className="mt-8 flex justify-center">
-          <Button 
-            onClick={handleLoadMore} 
+          <Button
+            onClick={handleLoadMore}
             disabled={isLoadingMore}
             className="min-w-[200px]"
           >
