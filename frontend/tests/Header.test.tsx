@@ -28,6 +28,6 @@ describe('Header', () => {
     render(<Header />);
 
     // Check if the sign in button is present
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeTruthy();
   });
 });
