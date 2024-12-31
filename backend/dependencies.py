@@ -12,7 +12,7 @@ if not MONGODB_URI:
 
 # Create a global client instance
 client = AsyncIOMotorClient(MONGODB_URI)
-db = client.get_database("profilematch")
+db = client.get_database("UPenn")
 
 async def get_db():
     try:
