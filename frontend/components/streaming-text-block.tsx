@@ -29,7 +29,7 @@ export function StreamingTextBlock({ query, profile }: StreamingTextBlockProps) 
     async function streamText() {
       const url = `${API_URL}/api/generate`;
       console.log('Making request to:', url);
-      
+
       try {
         const requestBody = {
           query,
@@ -52,7 +52,7 @@ export function StreamingTextBlock({ query, profile }: StreamingTextBlockProps) 
         });
 
         console.log('Response status:', response.status);
-        
+
         if (response.status === 429) {
           const errorText = await response.text();
           setError(`Rate limit exceeded. Please try again later. ${errorText}`);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -63,8 +63,8 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
             <p className="text-center text-muted-foreground">
               Please sign in to view and edit your profile
             </p>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={() => signIn('google', { callbackUrl: window.location.href })}
             >
               Sign in with Google
@@ -98,7 +98,7 @@ export function ProfileDialog({ isOpen, onClose, profileData, onProfileUpdate, s
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL!.replace(/\/$/, ''); // Remove trailing slash if it exists
       const url = `${baseUrl}/api/users/profile?email=${editedProfile!.email}`;
-        
+
       const response = await fetch(url, {
         method: 'PUT',
         headers: {

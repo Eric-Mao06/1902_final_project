@@ -1,21 +1,21 @@
-import localFont from "next/font/local";
-import "./globals.css";
-import { Providers } from "./providers";
-import Header from "../components/header";
-import MetaTags from "../components/meta-tags";
+import localFont from 'next/font/local';
+import './globals.css';
+import { Providers } from './providers';
+import Header from '../components/header';
+import MetaTags from '../components/meta-tags';
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
+  src: './fonts/GeistVF.woff',
+  variable: '--font-geist-sans',
 });
 
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+  src: './fonts/GeistMonoVF.woff',
+  variable: '--font-geist-mono',
 });
 
 export const viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,

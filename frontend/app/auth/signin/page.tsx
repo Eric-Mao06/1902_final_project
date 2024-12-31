@@ -20,9 +20,9 @@ function SignInContent() {
 
   const handleGoogleSignIn = async () => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || '';
-    await signIn('google', { 
+    await signIn('google', {
       callbackUrl: `${baseUrl}/auth/setup`,
-      redirect: true
+      redirect: true,
     });
   };
 
@@ -30,7 +30,7 @@ function SignInContent() {
     <Card className="p-8 space-y-6 w-full max-w-md">
       <h1 className="text-2xl font-bold text-center">Welcome to Linkd</h1>
       <p className="text-center text-muted-foreground">Sign in to connect with Penn alumni</p>
-      
+
       {error === 'AccessDenied' && (
         <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
           Only @upenn.edu email addresses are allowed to sign in.
@@ -38,8 +38,8 @@ function SignInContent() {
       )}
 
       <div className="space-y-4">
-        <Button 
-          className="w-full" 
+        <Button
+          className="w-full"
           onClick={handleGoogleSignIn}
         >
           Sign in with Google

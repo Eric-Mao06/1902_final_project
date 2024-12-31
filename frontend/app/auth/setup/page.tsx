@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ export default function SetupPage() {
           'Content-Type': 'application/json',
         },
       })
-        .then(response => {
+        .then((response) => {
           if (response.ok) {
             // If profile exists, redirect to home
             router.replace('/');
@@ -44,7 +44,7 @@ export default function SetupPage() {
             setIsLoading(false);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error checking profile:', error);
           setIsLoading(false);
         });
@@ -60,15 +60,15 @@ export default function SetupPage() {
 
     try {
       setIsLoading(true);
-      
+
       // Format the LinkedIn URL
       let formattedUrl = linkedinUrl.trim();
       if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
         formattedUrl = `https://${formattedUrl}`;
       }
-      
+
       console.log('Scraping LinkedIn URL:', formattedUrl);
-      
+
       // First, scrape the LinkedIn profile
       const scrapeResponse = await fetch(`${API_URL}/api/auth/linkedin-scrape`, {
         method: 'POST',
@@ -93,7 +93,7 @@ export default function SetupPage() {
         console.error('Error parsing response:', error);
         throw new Error('Invalid response from server');
       }
-      
+
       // After successful scraping, go to review page with the data
       router.push(`/auth/review?linkedinUrl=${encodeURIComponent(formattedUrl)}&data=${encodeURIComponent(JSON.stringify(profileData))}`);
     } catch (error) {
@@ -120,28 +120,28 @@ export default function SetupPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <MultiStepLoader 
-            loadingStates={[
-              {
-                text: "Initiating LinkedIn profile setup..."
-              },
-              {
-                text: "Validating your profile URL..."
-              },
-              {
-                text: "Establishing secure connection..."
-              },
-              {
-                text: "Beginning data collection..."
-              },
-              {
-                text: "Starting profile analysis..."
-              }
-            ]}
-            loop={false}
-            duration={3000}
-            loading={isLoading}
-        />  
+        <MultiStepLoader
+          loadingStates={[
+            {
+              text: 'Initiating LinkedIn profile setup...',
+            },
+            {
+              text: 'Validating your profile URL...',
+            },
+            {
+              text: 'Establishing secure connection...',
+            },
+            {
+              text: 'Beginning data collection...',
+            },
+            {
+              text: 'Starting profile analysis...',
+            },
+          ]}
+          loop={false}
+          duration={3000}
+          loading={isLoading}
+        />
       </div>
     );
   }
