@@ -6,7 +6,7 @@ import requests
 from typing import List, Dict, Any
 
 class VectorSearch:
-    def __init__(self, collection_name: str, database_name: str = "vector_search_db"):
+    def __init__(self, collection_name: str, database_name: str = "UPenn"):
         load_dotenv()
         self.mongo_client = MongoClient(os.getenv('MONGODB_URI'))
         self.db = self.mongo_client[database_name]

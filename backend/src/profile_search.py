@@ -45,7 +45,7 @@ class ProfileSearch:
             logger.info("Successfully connected to MongoDB in ProfileSearch")
             
             self.db = self.mongo_client['profilematch']
-            self.collection: Collection = self.db['users']
+            self.collection: Collection = self.db['profilematch']
             self.voyage_api_key = os.getenv('VOYAGE_API_KEY')
             if not self.voyage_api_key:
                 logger.error("VOYAGE_API_KEY not found in environment variables")
