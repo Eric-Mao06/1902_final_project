@@ -1,417 +1,114 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useSession, signIn, signOut } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { ProfileDialog } from '@/components/profile-dialog';
-import { useState, useEffect } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/app/context/sidebar-context';
 import { API_URL } from '@/app/constants';
 
 interface ProfileData {
-  name: string;
+  _id: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  location: string;
-  company: string;
-  role: string;
-  summary: string;
-  photoUrl: string;
-  linkedinUrl: string;
+  imageUrl?: string;
+  headline?: string;
 }
 
-export function Sidebar() {
+export default function Sidebar() {
+  const { data: session } = useSession();
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
-  const { isExpanded, setIsExpanded } = useSidebar();
-  const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isOpen, toggle } = useSidebar();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (sessionStatus === 'loading') return;
-      
-      if (!session?.user?.email) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if we're in the signup flow
-      const isSignupFlow = window.location.pathname.includes('/signup');
-      if (isSignupFlow) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        console.log('Fetching profile for email:', session.user.email);
-        const response = await fetch(
-          `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.profile) {
-            console.log('Received profile data:', data.profile);
-            // If name is empty in profile but exists in session, use session name
-            if (!data.profile.name && session.user.name) {
-              data.profile.name = session.user.name;
-              // Update the profile with the session name
-              const updateResponse = await fetch(
-                `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`,
-                {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    name: session.user.name,
-                  }),
-                }
-              );
-              if (!updateResponse.ok) {
-                console.error('Failed to update profile with session name');
-              }
-            }
-            setProfileData(data.profile);
+      if (session?.user?.email) {
+        try {
+          const response = await fetch(`${API_URL}/profile?email=${session.user.email}`);
+          if (response.ok) {
+            const data = await response.json();
+            setProfile(data);
           }
-        } else if (response.status === 404) {
-          // Silently handle 404 during normal operation
-          if (session.user.name) {
-            setProfileData({
-              name: session.user.name,
-              email: session.user.email || '',
-              location: '',
-              company: '',
-              role: '',
-              summary: '',
-              photoUrl: session.user.image || '',
-              linkedinUrl: ''
-            });
-          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
         }
-      } catch (error) {
-        // Silently handle errors during signup flow
-        console.debug('Profile fetch error:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [session, sessionStatus]);
-
-  const handleProfileUpdate = (updatedProfile: ProfileData) => {
-    setProfileData(updatedProfile);
-  };
-
-  const handleProfileClick = () => {
-    if (session) {
-      setIsProfileDialogOpen(true);
-    } else {
-      router.push('/auth/signin');
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!session?.user?.email) return;
-    
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      try {
-        const response = await fetch(
-          `${API_URL}/api/users/profile?email=${encodeURIComponent(session.user.email)}`,
-          {
-            method: 'DELETE',
-          }
-        );
-        
-        if (response.ok) {
-          await signOut();
-          router.push('/');
-        } else {
-          console.error('Failed to delete account');
-          alert('Failed to delete account. Please try again later.');
-        }
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        alert('An error occurred while deleting your account. Please try again later.');
-      }
-    }
-  };
-
-  if (!session) {
-    return (
-      <div 
-        className={`fixed left-0 top-0 z-40 h-screen border-r bg-background transition-all duration-300 ease-in-out ${
-          isExpanded ? 'w-[200px]' : 'w-16'
-        }`}
-      >
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute -right-3 top-6 z-50 flex h-6 w-6 items-center justify-center rounded-full border bg-background shadow-sm"
-        >
-          {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
-
-        <div className="flex h-full flex-col px-3 py-4">
-          <div className="space-y-6">
-            {/* Top section with logo */}
-            <div className="flex items-center h-8 px-2">
-              <button 
-                onClick={() => router.push('/')}
-                className="w-8 transition-opacity duration-200"
-              >
-                <div className="relative w-full aspect-square">
-                  <Image
-                    src="/Heading.png"
-                    alt="Linkd Logo"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-              </button>
-            </div>
-            
-            {/* New Chat button */}
-            <div className="px-2">
-              <Button
-                onClick={() => router.push('/')}
-                variant="outline"
-                className={`w-full justify-center rounded-lg border-[1.5px] bg-white py-2 text-sm font-medium hover:bg-gray-50 ${
-                  isExpanded ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                New Search
-              </Button>
-            </div>
-          </div>
-
-          {/* Bottom section with user profile */}
-          <div className="mt-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full">
-                  <div className="flex items-center gap-3 rounded-lg px-2 py-2 justify-center">
-                    <div className="relative h-8 w-8 overflow-hidden rounded-lg border-0 bg-gradient-to-br from-green-300 to-blue-300 flex-shrink-0">
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-sm font-medium text-white">G</span>
-                      </div>
-                    </div>
-                    {isExpanded && (
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-medium">Guest User</span>
-                      </div>
-                    )}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuItem onClick={() => signIn('google')}>
-                  Sign in with Google
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div 
-        className={`fixed left-0 top-0 z-40 h-screen border-r bg-background transition-all duration-300 ease-in-out ${
-          isExpanded ? 'w-[200px]' : 'w-16'
-        }`}
-      >
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute -right-3 top-6 z-50 flex h-6 w-6 items-center justify-center rounded-full border bg-background shadow-sm"
-        >
-          {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
-
-        <div className="flex h-full flex-col px-3 py-4">
-          <div className="space-y-6">
-            {/* Top section with logo */}
-            <div className="flex items-center h-8 px-2">
-              <button 
-                onClick={() => router.push('/')}
-                className="w-8 transition-opacity duration-200"
-              >
-                <div className="relative w-full aspect-square">
-                  <Image
-                    src="/Heading.png"
-                    alt="Linkd Logo"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-              </button>
-            </div>
-            
-            {/* New Chat button */}
-            <div className="px-2">
-              <Button
-                onClick={() => router.push('/')}
-                variant="outline"
-                className={`w-full justify-center rounded-lg border-[1.5px] bg-white py-2 text-sm font-medium hover:bg-gray-50 ${
-                  isExpanded ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                New Search
-              </Button>
-            </div>
-          </div>
-
-          {/* Bottom section with user profile */}
-          <div className="mt-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full">
-                  <div className="flex items-center gap-3 rounded-lg px-2 py-2 justify-center">
-                    <div className="relative h-8 w-8 overflow-hidden rounded-lg border-0 bg-gradient-to-br from-green-300 to-blue-300 flex-shrink-0">
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-sm font-medium text-white">L</span>
-                      </div>
-                    </div>
-                    {isExpanded && (
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-medium">Loading...</span>
-                      </div>
-                    )}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  }, [session?.user?.email]);
 
   return (
-    <div 
-      className={`fixed left-0 top-0 z-40 h-screen border-r bg-background transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-[200px]' : 'w-16'
-      }`}
-    >
+    <div className="relative">
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -right-3 top-6 z-50 flex h-6 w-6 items-center justify-center rounded-full border bg-background shadow-sm"
+        onClick={toggle}
+        className={`fixed top-4 ${
+          isOpen ? 'left-64' : 'left-4'
+        } z-50 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all duration-300`}
       >
-        {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
       </button>
 
-      <div className="flex h-full flex-col px-3 py-4">
-        <div className="space-y-6">
-          {/* Top section with logo */}
-          <div className="flex items-center h-8 px-2">
-            <button 
-              onClick={() => router.push('/')}
-              className="w-8 transition-opacity duration-200"
-            >
-              <div className="relative w-full aspect-square">
-                <Image
-                  src="/Heading.png"
-                  alt="Linkd Logo"
-                  fill
-                  className="object-contain"
-                  priority
-                />
+      <aside
+        className={`fixed top-0 left-0 h-full bg-white shadow-xl transition-all duration-300 ${
+          isOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full'
+        }`}
+      >
+        <div className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            {profile?.imageUrl ? (
+              <Image
+                src={profile.imageUrl}
+                alt="Profile"
+                width={80}
+                height={80}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
+                <span className="text-2xl text-gray-500">
+                  {profile?.firstName?.[0]}
+                  {profile?.lastName?.[0]}
+                </span>
               </div>
-            </button>
-          </div>
-          
-          {/* New Chat button */}
-          <div className="px-2">
-            <Button
-              onClick={() => router.push('/')}
-              variant="outline"
-              className={`w-full justify-center rounded-lg border-[1.5px] bg-white py-2 text-sm font-medium hover:bg-gray-50 ${
-                isExpanded ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              New Search
-            </Button>
-          </div>
-        </div>
-
-        {/* Bottom section with user profile */}
-        <div className="mt-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button 
-                className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50 ${
-                  !isExpanded && 'justify-center'
-                }`}
-                onClick={handleProfileClick}
-              >
-                <div className="relative h-8 w-8 overflow-hidden rounded-lg border-0 bg-gradient-to-br from-green-300 to-blue-300 flex-shrink-0">
-                  {profileData?.photoUrl ? (
-                    <Image
-                      src={profileData.photoUrl}
-                      alt="Profile"
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <span className="text-sm font-medium text-white">
-                        {profileData?.name?.[0] || session?.user?.name?.[0] || '👤'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {isExpanded && (
-                  <div className="flex flex-1 flex-col justify-center min-w-0">
-                    <p className="truncate text-sm font-medium text-left">
-                      {profileData?.name || session?.user?.name}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground text-left">
-                      {profileData?.email || session?.user?.email}
-                    </p>
-                  </div>
+            )}
+            {profile && (
+              <div className="text-center">
+                <h2 className="font-semibold">
+                  {profile.firstName} {profile.lastName}
+                </h2>
+                {profile.headline && (
+                  <p className="text-sm text-gray-600 mt-1">{profile.headline}</p>
                 )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
-                Edit Profile
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()}>
-                Sign Out
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDeleteAccount}
-                className="text-red-600 focus:text-red-600 focus:bg-red-50"
-              >
-                Delete Account
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+              </div>
+            )}
+          </div>
 
-      <ProfileDialog 
-        isOpen={isProfileDialogOpen}
-        onClose={() => setIsProfileDialogOpen(false)}
-        profileData={profileData}
-        onProfileUpdate={handleProfileUpdate}
-        session={session}
-      />
+          <nav className="mt-8">
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={() => router.push('/')}
+                  className="w-full text-left px-4 py-2 rounded hover:bg-gray-100 transition-colors"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="w-full text-left px-4 py-2 rounded hover:bg-gray-100 transition-colors"
+                >
+                  Profile
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
     </div>
   );
 }
