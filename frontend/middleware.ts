@@ -5,7 +5,6 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request })
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
-  const isSetupPage = request.nextUrl.pathname === '/auth/setup'
   const isSignInPage = request.nextUrl.pathname === '/auth/signin'
 
   // If user is not signed in and trying to access a protected route

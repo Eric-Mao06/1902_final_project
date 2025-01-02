@@ -11,20 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from src.profile_search import ProfileSearch
 from src.text_generation import TextGenerationRequest, create_prompt
-from routes import auth, users, search
-from dependencies import get_db
-from typing import List, Dict, Any
+from routes import auth, users, search, elo, leaderboard
 from bson.json_util import dumps
 import traceback
 import logging
-import json
 import os
 from dotenv import load_dotenv
-import requests
 from google import generativeai
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp
-from starlette.datastructures import Headers
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -75,7 +69,7 @@ origins = [
     "https://1902finalproject-production.up.railway.app",
     "https://1902finalproject-production.up.railway.app/",
     "https://pennlinkd.com/",
-    "https://pennlinkd.com",
+    "https://pennlinkd.com"
 ]
 
 # Add HTTPS redirect middleware first
@@ -96,6 +90,8 @@ app.add_middleware(CustomHeaderMiddleware)
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(search.router, prefix="/api/search", tags=["search"])
+app.include_router(elo.router, prefix="/api/elo", tags=["elo"])
+app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["leaderboard"])
 
 @app.get("/")
 async def root():
