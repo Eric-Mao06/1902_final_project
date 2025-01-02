@@ -46,14 +46,14 @@ export default function CompleteProfile() {
             const response = await fetch(`${API_URL}/api/auth/linkedin-data/${parsedData.dataId}`);
             if (response.ok) {
               const fullData = await response.json();
-              setProfileData(prev => ({
+              setProfileData((prev) => ({
                 ...prev,
-                raw_data: fullData
+                raw_data: fullData,
               }));
               // Update localStorage with full data
               localStorage.setItem('profileData', JSON.stringify({
                 ...parsedData,
-                raw_data: fullData
+                raw_data: fullData,
               }));
             }
           } catch (err) {
@@ -74,7 +74,7 @@ export default function CompleteProfile() {
       setError('You must be logged in to complete signup');
       return;
     }
-    
+
     setLoading(true);
     setError('');
 
@@ -84,10 +84,10 @@ export default function CompleteProfile() {
         ...profileData,
         email: session.user.email,
         name: session.user.name || profileData.name, // Use Google name if available
-        raw_data: profileData.raw_data || {}
+        raw_data: profileData.raw_data || {},
       };
       console.log('Sending profile data:', JSON.stringify(requestData, null, 2));
-      
+
       const response = await fetch(`${API_URL}/api/auth/complete-signup`, {
         method: 'POST',
         headers: {

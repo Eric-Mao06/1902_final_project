@@ -11,12 +11,11 @@ class LeaderboardSystem:
         load_dotenv()
         mongodb_uri = os.getenv('MONGODB_URI')
         self.mongo_client = AsyncIOMotorClient(mongodb_uri)
-        self.profile_db = self.mongo_client['profilematch']
-        self.ratings_db = self.mongo_client['elo']
+        self.db = self.mongo_client['UPenn']
         
         # Collections
-        self.profile_collection = self.profile_db['users']
-        self.ratings_collection = self.ratings_db['users']
+        self.profile_collection = self.db['profilematch']
+        self.ratings_collection = self.db['elo']
 
     async def get_leaderboard(self, limit: int = 100, skip: int = 0) -> List[Dict[str, Any]]:
         try:

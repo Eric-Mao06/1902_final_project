@@ -1,10 +1,6 @@
 import sys
 from pathlib import Path
-
-# Add the backend directory to the Python path
-backend_dir = str(Path(__file__).parent)
-if backend_dir not in sys.path:
-    sys.path.append(backend_dir)
+import uvicorn
 
 from fastapi import FastAPI, HTTPException, Request, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +15,11 @@ import os
 from dotenv import load_dotenv
 from google import generativeai
 from starlette.middleware.base import BaseHTTPMiddleware
+
+# Add the backend directory to the Python path
+backend_dir = str(Path(__file__).parent)
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -132,5 +133,13 @@ async def generate_text(request: TextGenerationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        h11_max_incomplete_event_size=1024*1024,  # 1MB
+        limit_concurrency=1000,
+        limit_max_requests=1000,
+        timeout_keep_alive=120
+    )
