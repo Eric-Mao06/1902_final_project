@@ -176,6 +176,42 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem onClick={async () => {
+                    if (!profileData?.linkedinUrl) {
+                      alert('No LinkedIn URL found. Please edit your profile to add your LinkedIn URL first.');
+                      return;
+                    }
+                    if (!session?.user?.email) {
+                      alert('No user email found. Please try signing out and signing in again.');
+                      return;
+                    }
+                    try {
+                      const response = await fetch(
+                        `${API_URL}/api/users/profile/update?email=${encodeURIComponent(session.user.email)}`,
+                        {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            linkedinUrl: profileData.linkedinUrl
+                          }),
+                        }
+                      );
+                      if (response.ok) {
+                        const updatedProfile = await response.json();
+                        setProfileData(updatedProfile.profile);
+                        alert('Profile updated successfully!');
+                      } else {
+                        throw new Error('Failed to update profile');
+                      }
+                    } catch (error) {
+                      console.error('Error updating profile:', error);
+                      alert('Failed to update profile. Please try again later.');
+                    }
+                  }}>
+                    Update Profile
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
                     Edit Profile
                   </DropdownMenuItem>

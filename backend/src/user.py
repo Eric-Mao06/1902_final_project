@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class User:
     def __init__(self, db: AsyncIOMotorDatabase):
-        self.collection = db.users
+        self.collection = db.profilematch
 
     @staticmethod
     def normalize_linkedin_url(url: str) -> str:
