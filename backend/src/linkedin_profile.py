@@ -63,9 +63,46 @@ async def scrape_linkedin_profile(linkedin_url: str):
         profile_data = response.json()
         raw_profile = str(profile_data)
         print(f"Successfully scraped profile data length: {len(raw_profile)}")
+        print(f"Raw profile data: {profile_data}")
         
         if not profile_data:
             raise HTTPException(status_code=400, detail="LinkedIn scraping failed: Empty response")
+            
+        # Check if the user has UPenn in their education
+        is_penn_student = False
+        educations = profile_data.get('educations', [])
+        print("=== Education Check ===")
+        print(f"Raw profile data type: {type(profile_data)}")
+        print(f"Raw educations data: {educations}")
+        
+        for education in educations:
+            print(f"\nChecking education entry: {education}")
+            school_name = education.get('schoolName', '')
+            print(f"School name (before lower): {school_name}")
+            school_name = school_name.lower() if school_name else ''
+            print(f"School name (after lower): {school_name}")
+            
+            penn_keywords = ['university of pennsylvania', 'upenn', 'wharton']
+            for keyword in penn_keywords:
+                if keyword in school_name:
+                    print(f"Found match! Keyword '{keyword}' found in '{school_name}'")
+                    is_penn_student = True
+                    break
+            if is_penn_student:
+                break
+                
+        print(f"\nFinal result - Is Penn student: {is_penn_student}")
+        
+        # Generate a unique ID for this data
+        data_id = str(uuid.uuid4())
+        
+        if not is_penn_student:
+            # Return a success response with is_penn_student flag and dataId
+            return {
+                "is_penn_student": False,
+                "message": "Access denied: Must be a University of Pennsylvania student",
+                "dataId": data_id
+            }
         
         # Extract profile information
         location = f"{profile_data.get('geo', {}).get('city', '')}, {profile_data.get('geo', {}).get('country', '')}"
@@ -96,9 +133,6 @@ Here is the raw JSON (do not summarize this instruction text, only the JSON cont
         response = model.generate_content(prompt)
         summary = response.text
         
-        # Generate a unique ID for this data
-        data_id = str(uuid.uuid4())
-        
         # Store the full data with timestamp
         linkedin_data_store[data_id] = {
             'data': profile_data,
@@ -121,7 +155,8 @@ Here is the raw JSON (do not summarize this instruction text, only the JSON cont
             "summary": summary,
             "photoUrl": photo_url,
             "name": name,
-            "dataId": data_id
+            "dataId": data_id,
+            "is_penn_student": is_penn_student
         }
         
     except HTTPException:

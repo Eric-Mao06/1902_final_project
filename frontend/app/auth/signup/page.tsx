@@ -29,6 +29,15 @@ export default function SignUp() {
       }
 
       const data = await response.json();
+      
+      if (!data.is_penn_student) {
+        // Clear any stored profile data
+        localStorage.removeItem('profileData');
+        // Redirect to homepage with error parameter
+        router.push('/?from=signup&error=not_penn_student');
+        return;
+      }
+      
       // Store the scraped data in localStorage temporarily
       localStorage.setItem('profileData', JSON.stringify(data));
       router.push('/auth/signup/complete-profile');

@@ -48,13 +48,28 @@ export default function ReviewContent({ linkedinUrl }: ReviewContentProps) {
         });
 
         if (!response.ok) {
+          console.error('LinkedIn scrape failed:', await response.text());
           setError('Failed to load profile data');
           return;
         }
 
         const data = await response.json();
+        console.log("=== LinkedIn Scrape Response ===");
+        console.log("Full response data:", data);
+        console.log("is_penn_student value:", data.is_penn_student);
+        console.log("dataId value:", data.dataId);
 
-        // Step 2: Get raw LinkedIn data
+        // Check if user is a Penn student
+        if (!data.is_penn_student) {
+          console.log("User not from Penn, redirecting...");
+          // Clear any stored profile data
+          localStorage.removeItem('profileData');
+          // Redirect to homepage with error parameter
+          router.push('/?from=signup&error=not_penn_student');
+          return;
+        }
+
+        // Step 2: Get raw LinkedIn data only if user is a Penn student
         const rawDataResponse = await fetch(`${API_URL}/api/auth/linkedin-data/${data.dataId}`);
         if (!rawDataResponse.ok) {
           setError('Failed to load complete profile data');

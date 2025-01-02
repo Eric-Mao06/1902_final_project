@@ -39,6 +39,19 @@ export default function HomePage() {
     return () => clearInterval(intervalId);
   }, [placeholders]);
 
+  // Check for error parameter in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const errorParam = params.get('error');
+    const fromParam = params.get('from');
+    
+    if (fromParam === 'signup' && errorParam === 'not_penn_student') {
+      setError('Access denied: You must be a University of Pennsylvania student to use this platform. Please make sure your LinkedIn profile includes your UPenn education.');
+      // Clear the URL parameters without refreshing the page
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setError('Please enter a search query');
