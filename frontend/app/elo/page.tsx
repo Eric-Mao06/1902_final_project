@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ComparisonTool } from '../../components/ComparisonTool';
-import { useToast } from '@/hooks/use-toast';
 import { API_URL } from '../constants';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -42,24 +41,18 @@ export default function Elo() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [eloChanges, setEloChanges] = useState<{ left: number; right: number } | undefined>();
   const [newRatings, setNewRatings] = useState<{ left: number; right: number } | undefined>();
-  const { toast } = useToast();
   const session = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if(session.status === 'unauthenticated') {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Required',
-        description: 'Only users who are logged in can access alumni ranking',
-      });
       router.replace('/leaderboard?from=elo');
     } else if(session.status === 'loading') {
       setIsAuthenticated(false);
     } else {
       setIsAuthenticated(true);
     }
-  }, [session.status, router, toast]);
+  }, [session.status, router]);
 
   const fetchNewPair = useCallback(async () => {
     try {
@@ -71,17 +64,11 @@ export default function Elo() {
       setProfileLeft(profile1);
       setProfileRight(profile2);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast({
-          title: 'Error',
-          description: `Failed to load profiles: ${error.message}`,
-          variant: 'destructive',
-        });
-      }
+      console.error('Failed to load profiles:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   const handleVote = async (vote: 'left' | 'right' | 'equal') => {
     if (!profileLeft?._id || !profileRight?._id) return;
@@ -114,13 +101,7 @@ export default function Elo() {
       });
 
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast({
-          title: 'Error',
-          description: `Failed to submit vote. Error: ${error.message}`,
-          variant: 'destructive',
-        });
-      }
+      console.error('Failed to submit vote:', error);
     }
   };
 

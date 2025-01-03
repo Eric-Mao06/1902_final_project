@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { API_URL } from '../constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
@@ -23,7 +22,6 @@ export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthAlert, setShowAuthAlert] = useState(false);
-  const { toast } = useToast();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -40,18 +38,14 @@ export default function LeaderboardPage() {
         const data = await response.json();
         setLeaderboard(data.leaderboard);
       } catch (error) {
-        toast({
-          title: 'Error',
-          description: `Failed to load leaderboard: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          variant: 'destructive',
-        });
+        console.error('Failed to load leaderboard:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchLeaderboard();
-  }, [toast]);
+  }, []);
 
   const handleCardClick = (linkedinUrl?: string) => {
     if (linkedinUrl) {
