@@ -4,7 +4,8 @@ const nextConfig = {
     domains: [
       'media.licdn.com',
       'lh3.googleusercontent.com',
-      'media.istockphoto.com'
+      'media.istockphoto.com',
+      'branding.web-resources.upenn.edu'
     ],
   },
 }

@@ -34,7 +34,7 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [logo, setLogo] = useState<string | undefined>(undefined);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -98,7 +98,14 @@ export default function Header() {
     };
 
     fetchProfile();
+    fetchLogo();
   }, [session, status]);
+
+  const fetchLogo = async () => {
+    const response = await fetch(`${API_URL}/api/info/logo`);
+    const data = await response.json();
+    setLogo(data.logo);
+  };
 
   const handleProfileUpdate = (updatedProfile: ProfileData) => {
     setProfileData(updatedProfile);
@@ -197,6 +204,15 @@ export default function Header() {
                 quality={100}
               />
             </Button>
+            {logo && <Image
+                src={logo}
+                alt="Linkd Logo"
+                width={600}
+                height={200}
+                className="h-6 w-auto sm:h-8"
+                priority
+                quality={100}
+              />}
           </div>
 
           <div className="flex items-center gap-4">

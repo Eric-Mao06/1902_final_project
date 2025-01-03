@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from src.profile_search import ProfileSearch
 from src.text_generation import TextGenerationRequest, create_prompt
-from routes import auth, users, search, elo, leaderboard
+from routes import auth, users, search, elo, leaderboard, info
 from bson.json_util import dumps
 import traceback
 import logging
@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 from google import generativeai
 from starlette.middleware.base import BaseHTTPMiddleware
+
 
 # Add the backend directory to the Python path
 backend_dir = str(Path(__file__).parent)
@@ -93,6 +94,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(search.router, prefix="/api/search", tags=["search"])
 app.include_router(elo.router, prefix="/api/elo", tags=["elo"])
 app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["leaderboard"])
+app.include_router(info.router, prefix="/api/info", tags=["info"])
 
 @app.get("/")
 async def root():
