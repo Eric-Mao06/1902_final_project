@@ -10,7 +10,7 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ }) {
       // Allow all email addresses since we verify through LinkedIn education
       return true;
     },
