@@ -3,6 +3,7 @@ import './globals.css';
 import { Providers } from './providers';
 import Header from '../components/header';
 import MetaTags from '../components/meta-tags';
+import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -38,6 +39,7 @@ export default function RootLayout({
             <main className="flex-1">
               {children}
             </main>
+            <Toaster position="top-center" />
           </div>
         </Providers>
       </body>

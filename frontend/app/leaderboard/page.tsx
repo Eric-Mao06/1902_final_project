@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { API_URL } from '../constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from "sonner";
 
 interface LeaderboardEntry {
     _id: string;
@@ -21,12 +21,21 @@ interface LeaderboardEntry {
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAuthAlert, setShowAuthAlert] = useState(false);
   const searchParams = useSearchParams();
+  const toastShown = useRef(false);
 
   useEffect(() => {
-    if (searchParams.get('from') === 'elo') {
-      setShowAuthAlert(true);
+    if (searchParams.get('from') === 'elo' && !toastShown.current) {
+      toast.error("Authentication Required", {
+        description: "Only users who are logged in can access alumni ranking",
+        closeButton: true,
+        style: {
+          backgroundColor: '#fee2e2',
+          border: '1px solid #fecaca',
+          color: '#dc2626'
+        }
+      });
+      toastShown.current = true;
     }
   }, [searchParams]);
 
@@ -63,14 +72,6 @@ export default function LeaderboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {showAuthAlert && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Authentication Required</AlertTitle>
-          <AlertDescription>
-                        Only users who are logged in can access alumni ranking
-          </AlertDescription>
-        </Alert>
-      )}
       <h1 className="text-3xl font-bold mb-8 text-center">Alumni Leaderboard</h1>
       <div className="grid gap-4 max-w-3xl mx-auto">
         {leaderboard.map((entry, index) => (
