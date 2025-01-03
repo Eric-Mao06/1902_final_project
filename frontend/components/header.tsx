@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { API_URL } from '@/app/constants';
+import { Menu } from "lucide-react";
 
 interface ProfileData {
   name: string;
@@ -32,6 +33,7 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -140,7 +142,7 @@ export default function Header() {
               alt="Linkd Logo"
               width={480}
               height={160}
-              className="h-8 w-auto"
+              className="h-6 w-auto sm:h-8"
               priority
               quality={100}
             />
@@ -150,83 +152,160 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {status === 'authenticated' && session?.user ? (
             <>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/elo')}
-                className="px-4 py-2"
-              >
-                Rank Alumni
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/leaderboard')}
-                className="px-4 py-2"
-              >
-                Alumni Leaderboard
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={profileData?.photoUrl ?? session.user.image ?? undefined} alt={profileData?.name || 'User'} />
-                      <AvatarFallback>
-                        {profileData?.name ? profileData.name[0].toUpperCase() : 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px]">
-                  <DropdownMenuItem onClick={async () => {
-                    if (!profileData?.linkedinUrl) {
-                      alert('No LinkedIn URL found. Please edit your profile to add your LinkedIn URL first.');
-                      return;
-                    }
-                    if (!session?.user?.email) {
-                      alert('No user email found. Please try signing out and signing in again.');
-                      return;
-                    }
-                    try {
-                      const response = await fetch(
-                        `${API_URL}/api/users/profile/update?email=${encodeURIComponent(session.user.email)}`,
-                        {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({
-                            linkedinUrl: profileData.linkedinUrl
-                          }),
-                        }
-                      );
-                      if (response.ok) {
-                        const updatedProfile = await response.json();
-                        setProfileData(updatedProfile.profile);
-                        alert('Profile updated successfully!');
-                      } else {
-                        throw new Error('Failed to update profile');
+              <div className="hidden sm:flex sm:items-center sm:gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/elo')}
+                  className="px-4 py-2"
+                >
+                  Rank Alumni
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/leaderboard')}
+                  className="px-4 py-2"
+                >
+                  Alumni Leaderboard
+                </Button>
+              </div>
+              
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[200px]">
+                    <DropdownMenuItem onClick={() => router.push('/elo')}>
+                      Rank Alumni
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/leaderboard')}>
+                      Alumni Leaderboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={async () => {
+                      if (!profileData?.linkedinUrl) {
+                        alert('No LinkedIn URL found. Please edit your profile to add your LinkedIn URL first.');
+                        return;
                       }
-                    } catch (error) {
-                      console.error('Error updating profile:', error);
-                      alert('Failed to update profile. Please try again later.');
-                    }
-                  }}>
-                    Update Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
-                    Edit Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    Sign out
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDeleteAccount}
-                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                  >
-                    Delete Account
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      if (!session?.user?.email) {
+                        alert('No user email found. Please try signing out and signing in again.');
+                        return;
+                      }
+                      try {
+                        const response = await fetch(
+                          `${API_URL}/api/users/profile/update?email=${encodeURIComponent(session.user.email)}`,
+                          {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              linkedinUrl: profileData.linkedinUrl
+                            }),
+                          }
+                        );
+                        if (response.ok) {
+                          const updatedProfile = await response.json();
+                          setProfileData(updatedProfile.profile);
+                          alert('Profile updated successfully!');
+                        } else {
+                          throw new Error('Failed to update profile');
+                        }
+                      } catch (error) {
+                        console.error('Error updating profile:', error);
+                        alert('Failed to update profile. Please try again later.');
+                      }
+                    }}>
+                      Update Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
+                      Edit Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => signOut()}>
+                      Sign Out
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDeleteAccount} className="text-red-600">
+                      Delete Account
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <div className="hidden sm:block">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profileData?.photoUrl ?? session.user.image ?? undefined} alt={profileData?.name || 'User'} />
+                        <AvatarFallback>
+                          {profileData?.name ? profileData.name[0].toUpperCase() : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[200px]">
+                    <DropdownMenuItem onClick={() => router.push('/elo')}>
+                      Rank Alumni
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/leaderboard')}>
+                      Alumni Leaderboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={async () => {
+                      if (!profileData?.linkedinUrl) {
+                        alert('No LinkedIn URL found. Please edit your profile to add your LinkedIn URL first.');
+                        return;
+                      }
+                      if (!session?.user?.email) {
+                        alert('No user email found. Please try signing out and signing in again.');
+                        return;
+                      }
+                      try {
+                        const response = await fetch(
+                          `${API_URL}/api/users/profile/update?email=${encodeURIComponent(session.user.email)}`,
+                          {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              linkedinUrl: profileData.linkedinUrl
+                            }),
+                          }
+                        );
+                        if (response.ok) {
+                          const updatedProfile = await response.json();
+                          setProfileData(updatedProfile.profile);
+                          alert('Profile updated successfully!');
+                        } else {
+                          throw new Error('Failed to update profile');
+                        }
+                      } catch (error) {
+                        console.error('Error updating profile:', error);
+                        alert('Failed to update profile. Please try again later.');
+                      }
+                    }}>
+                      Update Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsProfileDialogOpen(true)}>
+                      Edit Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => signOut()}>
+                      Sign out
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDeleteAccount}
+                      className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                    >
+                      Delete Account
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
             </>
           ) : (
             <Button onClick={() => signIn('google')} variant="outline">

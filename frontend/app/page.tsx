@@ -93,10 +93,12 @@ export default function HomePage() {
           <div className="flex flex-col items-center">
             <div
               onClick={() => router.push('/elo')}
-              className="mb-6 px-4 py-2 border border-black hover:bg-black/5 cursor-pointer rounded-full text-sm flex items-center gap-1 transition-colors"
+              className="mb-6 px-4 py-2 border border-black hover:bg-black/5 cursor-pointer rounded-full text-sm text-center mx-auto"
             >
-              We just launched alumni ranking, click here to try it!
-              <ArrowUpRight className="w-4 h-4" />
+              <div className="flex items-center justify-center gap-1">
+                <span>We just launched alumni ranking, click here to try it!</span>
+                <ArrowUpRight className="w-4 h-4 flex-shrink-0" />
+              </div>
             </div>
             <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-4xl text-center mb-8 lg:mb-10">
               Where Ambition Meets{' '}
