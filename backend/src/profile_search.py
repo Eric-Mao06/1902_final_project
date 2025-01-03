@@ -44,7 +44,7 @@ class ProfileSearch:
             self.mongo_client.admin.command('ping')
             logger.info("Successfully connected to MongoDB in ProfileSearch")
             
-            self.db = self.mongo_client['profilematch']
+            self.db = self.mongo_client['UPenn']
             self.collection: Collection = self.db['profilematch']
             self.voyage_api_key = os.getenv('VOYAGE_API_KEY')
             if not self.voyage_api_key:
